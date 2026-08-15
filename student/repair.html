@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="student">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后勤报修 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .repair-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; transition: all var(--dur) var(--ease); }
+  .repair-card:hover { box-shadow: var(--shadow-md); }
+  .repair-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .repair-title { font-weight: 700; font-size: 14px; margin: 0 0 4px; }
+  .repair-meta { font-size: 11px; color: var(--fg-muted); }
+  .repair-desc { font-size: 13px; color: var(--fg); background: var(--muted); padding: 10px 12px; border-radius: var(--radius); margin: 10px 0; line-height: 1.5; }
+  .progress-steps { display: flex; gap: 4px; margin-top: 12px; }
+  .progress-step { flex: 1; height: 4px; background: var(--muted); border-radius: 2px; }
+  .progress-step.done { background: var(--accent); }
+  .progress-step.active { background: var(--accent-grad); }
+  .progress-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; color: var(--fg-subtle); }
+  .urgency-tag { font-size: 10px; padding: 2px 8px; border-radius: var(--radius-pill); font-weight: 700; }
+  .urgency-紧急 { background: var(--danger-soft); color: var(--danger); }
+  .urgency-普通 { background: var(--info-soft); color: var(--info); }
+  .urgency-低 { background: var(--muted); color: var(--fg-muted); }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "主导航", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "dorm", label: "宿舍管理", icon: "home", href: "dorm.html" },
+      { key: "dining", label: "餐饮服务", icon: "utensils", href: "dining.html" },
+      { key: "repair", label: "后勤报修", icon: "wrench", href: "repair.html", badge: "2" },
+      { key: "access", label: "门禁出行", icon: "door", href: "access.html" },
+      { key: "social", label: "校园社交", icon: "chat", href: "social.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "student", nav, title: "后勤报修 · 学生端", active: "repair" });
+  const repairs = CAMPUS.mock.repairs;
+
+  const steps = ["提交", "派工", "处理中", "已完成"];
+  function progressHtml(r) {
+    const idx = r.status === "已完成" ? 3 : (r.status === "处理中" ? 2 : (r.status === "待派工" ? 1 : 0));
+    return '<div class="progress-steps">' + steps.map((s, i) =>
+      '<div class="progress-step ' + (i < idx ? "done" : (i === idx ? "active" : "")) + '"></div>'
+    ).join("") + "</div>" +
+    '<div class="progress-labels">' + steps.map((s, i) => "<span>" + s + "</span>").join("") + "</div>";
+  }
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "学生端", href: "index.html" }, { label: "后勤报修" }], "后勤报修", "提交宿舍、公共设施报修工单，实时跟踪处理进度",
+      '<button class="btn btn-primary btn-sm" id="newRepairBtn">' + CAMPUS.icon("plus", "icon-sm") + " 发起报修</button>") +
+
+    '<section class="grid grid-4 mb-4">' +
+      '<div class="stat-card"><div class="stat-icon">' + CAMPUS.icon("ticket") + '</div><p class="stat-label">全部工单</p><p class="stat-value">' + repairs.length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--warning-soft);color:var(--warning)">' + CAMPUS.icon("clock") + '</div><p class="stat-label">待派工</p><p class="stat-value">' + repairs.filter(r => r.status === "待派工").length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--info-soft);color:var(--info)">' + CAMPUS.icon("activity") + '</div><p class="stat-label">处理中</p><p class="stat-value">' + repairs.filter(r => r.status === "处理中").length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--success-soft);color:var(--success)">' + CAMPUS.icon("check") + '</div><p class="stat-label">已完成</p><p class="stat-value">' + repairs.filter(r => r.status === "已完成").length + '</p></div>' +
+    "</section>" +
+
+    '<section class="grid grid-2">' + repairs.map(r =>
+      '<div class="repair-card">' +
+        '<div class="repair-head"><div><div class="repair-title">' + r.title + '</div><div class="repair-meta">' + r.id + " · " + r.type + " · " + r.created.slice(0, 16) + "</div></div>" +
+        '<div class="flex gap-2"><span class="urgency-tag urgency-' + r.urgency + '">' + r.urgency + "</span>" + CAMPUS.shell.statusTag(r.status) + "</div></div>" +
+        '<div class="repair-desc">' + r.desc + "</div>" +
+        '<div class="flex items-center justify-between" style="font-size:12px"><span class="text-muted">' + CAMPUS.icon("map", "icon-sm") + " " + r.location + "</span>" +
+        '<span class="text-muted">' + (r.handler ? CAMPUS.icon("user", "icon-sm") + " " + r.handler : "待派工") + "</span></div>" +
+        progressHtml(r) +
+        '<div class="flex gap-2 mt-3"><button class="btn btn-ghost btn-sm" onclick="CAMPUS.toast(\'工单详情已打开\')">详情</button>' +
+        (r.status === "已完成" ? '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'感谢您的评价！\',\'success\')">评价</button>' : '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'已为您催单\',\'warning\')">催单</button>') +
+        "</div>" +
+      "</div>"
+    ).join("") + "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+
+  document.getElementById("newRepairBtn").onclick = () => {
+    CAMPUS.modal({
+      title: "发起报修工单",
+      body:
+        '<div class="field"><label class="field-label">报修类型</label><select class="select"><option>宿舍报修</option><option>公共设施报修</option><option>网络故障</option><option>其他</option></select></div>' +
+        '<div class="field"><label class="field-label">报修位置</label><input class="input" value="明德楼 A-312"></div>' +
+        '<div class="field"><label class="field-label">紧急程度</label><select class="select"><option>普通</option><option>紧急</option><option>低</option></select></div>' +
+        '<div class="field"><label class="field-label">问题描述</label><textarea class="textarea" placeholder="请详细描述故障现象…"></textarea></div>' +
+        '<div class="field"><label class="field-label">上传图片（可选）</label><button class="btn btn-outline btn-block">' + CAMPUS.icon("upload", "icon-sm") + " 点击上传</button></div>",
+      onOk: () => { CAMPUS.toast("工单已提交，预计 24h 内响应", "success"); }
+    });
+  };
+</script>
+</body>
+</html>
