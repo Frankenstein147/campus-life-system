@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="student">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学生端 · 概览 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .quick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .quick-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px 14px; text-align: center; transition: all var(--dur) var(--ease); cursor: pointer; text-decoration: none; color: inherit; display: block; }
+  .quick-item:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .quick-icon { width: 44px; height: 44px; border-radius: var(--radius); background: var(--accent-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; transition: var(--dur); }
+  .quick-item:hover .quick-icon { background: var(--accent-grad); color: #fff; }
+  .quick-label { font-size: 13px; font-weight: 600; color: var(--fg); }
+  .quick-desc { font-size: 11px; color: var(--fg-muted); margin-top: 2px; }
+  .menu-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .menu-row:last-child { border-bottom: none; }
+  .menu-name { font-weight: 600; font-size: 13px; }
+  .menu-meta { font-size: 11px; color: var(--fg-muted); }
+  .post-card { padding: 16px; }
+  .post-author { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .post-content { font-size: 13px; line-height: 1.6; color: var(--fg); margin-bottom: 12px; }
+  .post-actions { display: flex; gap: 16px; font-size: 12px; color: var(--fg-muted); }
+  .post-action { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: var(--dur); }
+  .post-action:hover { color: var(--accent); }
+  .post-action.liked { color: var(--danger); }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "主导航", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "dorm", label: "宿舍管理", icon: "home", href: "dorm.html" },
+      { key: "dining", label: "餐饮服务", icon: "utensils", href: "dining.html" },
+      { key: "repair", label: "后勤报修", icon: "wrench", href: "repair.html", badge: "2" },
+      { key: "access", label: "门禁出行", icon: "door", href: "access.html" },
+      { key: "social", label: "校园社交", icon: "chat", href: "social.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "student", nav, title: "概览 · 学生端", active: "home" });
+
+  const stats = CAMPUS.mock.stats.student;
+  const repairs = CAMPUS.mock.repairs.filter(r => r.status !== "已完成");
+  const menus = CAMPUS.mock.dining.menus;
+  const posts = CAMPUS.mock.social.posts.slice(0, 3);
+  const user = CAMPUS.mock.currentUser;
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "学生端", href: "index.html" }, { label: "概览" }], "你好，" + user.name, "今日校园生活一览 · " + new Date().toLocaleDateString("zh-CN", { weekday: "long", month: "long", day: "numeric" }),
+      '<a class="btn btn-outline btn-sm" href="repair.html">' + CAMPUS.icon("plus", "icon-sm") + " 发起报修</a>") +
+
+    '<section class="grid grid-4 mb-4">' + stats.map(CAMPUS.shell.statCard).join("") + "</section>" +
+
+    '<section class="card mb-4"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">快捷功能</h3><span class="text-muted" style="font-size:12px">点击进入对应服务</span></div>' +
+      '<div class="quick-grid">' +
+        '<a class="quick-item" href="dorm.html"><div class="quick-icon">' + CAMPUS.icon("home") + '</div><div class="quick-label">宿舍管理</div><div class="quick-desc">水电·卫生·室友</div></a>' +
+        '<a class="quick-item" href="dining.html"><div class="quick-icon">' + CAMPUS.icon("utensils") + '</div><div class="quick-label">在线点餐</div><div class="quick-desc">余额 ¥' + CAMPUS.mock.dining.balance.toFixed(2) + "</div></a>" +
+        '<a class="quick-item" href="repair.html"><div class="quick-icon">' + CAMPUS.icon("wrench") + '</div><div class="quick-label">后勤报修</div><div class="quick-desc">' + repairs.length + ' 个进行中</div></a>' +
+        '<a class="quick-item" href="access.html"><div class="quick-icon">' + CAMPUS.icon("door") + '</div><div class="quick-label">门禁记录</div><div class="quick-desc">本月 186 次</div></a>' +
+        '<a class="quick-item" href="social.html"><div class="quick-icon">' + CAMPUS.icon("chat") + '</div><div class="quick-label">校园动态</div><div class="quick-desc">5 条新动态</div></a>' +
+        '<a class="quick-item" href="dining.html"><div class="quick-icon">' + CAMPUS.icon("wallet") + '</div><div class="quick-label">校园卡充值</div><div class="quick-desc">一键充值</div></a>' +
+        '<a class="quick-item" href="social.html"><div class="quick-icon">' + CAMPUS.icon("calendar") + '</div><div class="quick-label">活动报名</div><div class="quick-desc">4 个进行中</div></a>' +
+        '<a class="quick-item" href="dorm.html"><div class="quick-icon">' + CAMPUS.icon("shield") + '</div><div class="quick-label">卫生检查</div><div class="quick-desc">本周三 15:00</div></a>' +
+      "</div></section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">进行中工单</h3><a class="text-accent" href="repair.html" style="font-size:12px">查看全部 →</a></div>' +
+        (repairs.length ? repairs.map(r =>
+          '<div class="flex items-center justify-between" style="padding:12px 0;border-bottom:1px solid var(--border)"><div style="flex:1"><div style="font-weight:600;font-size:13px">' + r.title + '</div><div class="text-muted" style="font-size:11px">' + r.id + " · " + r.created.slice(5, 16) + "</div></div>" +
+          CAMPUS.shell.statusTag(r.status) + "</div>"
+        ).join("") : CAMPUS.shell.empty("暂无进行中工单")) +
+      "</div>" +
+
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">今日推荐菜单</h3><a class="text-accent" href="dining.html" style="font-size:12px">去点餐 →</a></div>' +
+        menus.map(m =>
+          '<div style="margin-bottom:12px"><div class="tag tag-accent mb-2">' + m.time + "</div>" +
+          m.items.slice(0, 2).map(i =>
+            '<div class="menu-row"><div><div class="menu-name">' + i.name + (i.hot ? ' <span class="tag tag-danger" style="font-size:9px">HOT</span>' : "") + '</div><div class="menu-meta">' + i.hall + " · " + i.cal + "kcal</div></div>" +
+            '<div class="text-accent" style="font-weight:700">¥' + i.price + "</div></div>"
+          ).join("") + "</div>"
+        ).join("") +
+      "</div>" +
+    "</section>" +
+
+    '<section class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">校园动态</h3><a class="text-accent" href="social.html" style="font-size:12px">查看更多 →</a></div>' +
+      '<div class="grid grid-3">' + posts.map(p =>
+        '<div class="post-card" style="border:1px solid var(--border);border-radius:var(--radius)">' +
+          '<div class="post-author"><div class="avatar avatar-sm">' + p.avatar + '</div><div><div style="font-weight:600;font-size:13px">' + p.author + '</div><div class="text-muted" style="font-size:11px">' + p.time + "</div></div></div>" +
+          '<div class="post-content">' + p.content + "</div>" +
+          '<div class="post-actions"><span class="post-action' + (p.liked ? " liked" : "") + '">' + CAMPUS.icon("heart", "icon-sm") + " " + p.likes + '</span><span class="post-action">' + CAMPUS.icon("chat", "icon-sm") + " " + p.comments + "</span></div>" +
+        "</div>"
+      ).join("") + "</div>" +
+    "</section>";
+
+  main.querySelectorAll(".quick-item").forEach(item => {
+    item.classList.add("fade-up");
+  });
+</script>
+</body>
+</html>
