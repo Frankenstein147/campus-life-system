@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="staff">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>场地物资借用 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .venue-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; transition: var(--dur); cursor: pointer; }
+  .venue-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .venue-icon { width: 48px; height: 48px; border-radius: var(--radius); background: var(--accent-grad-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .item-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .item-row:last-child { border-bottom: none; }
+  .item-icon { width: 40px; height: 40px; border-radius: var(--radius); background: var(--muted); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
+  .borrow-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; display: flex; align-items: center; gap: 12px; }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "办公导航", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "attend", label: "考勤打卡", icon: "clock", href: "attendance.html" },
+      { key: "notice", label: "通知下发", icon: "bell", href: "notice.html" },
+      { key: "repair", label: "办公报修", icon: "wrench", href: "office-repair.html", badge: "1" },
+      { key: "resource", label: "场地物资借用", icon: "box", href: "resource.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "staff", nav, title: "场地物资借用 · 教职工端", active: "resource" });
+  const r = CAMPUS.mock.staff.resources;
+  const itemEmojis = ["📽️","🎤","🖱️","💻","📋"];
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "教职工端", href: "index.html" }, { label: "场地物资借用" }], "场地物资借用", "会议室预约、教学设备借用与归还管理",
+      '<button class="btn btn-primary btn-sm" id="newBorrowBtn">' + CAMPUS.icon("plus", "icon-sm") + " 新增借用</button>") +
+
+    '<section class="grid grid-4 mb-4">' +
+      '<div class="stat-card"><div class="stat-icon">' + CAMPUS.icon("map") + '</div><p class="stat-label">可用场地</p><p class="stat-value">' + r.venues.filter(v => v.status === "可借用").length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--info-soft);color:var(--info)">' + CAMPUS.icon("box") + '</div><p class="stat-label">借用中物资</p><p class="stat-value">' + r.myBorrows.length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--success-soft);color:var(--success)">' + CAMPUS.icon("check") + '</div><p class="stat-label">本月归还</p><p class="stat-value">12</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--warning-soft);color:var(--warning)">' + CAMPUS.icon("clock") + '</div><p class="stat-label">即将到期</p><p class="stat-value">2</p></div>' +
+    "</section>" +
+
+    '<section class="card mb-4"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">会议室 / 场地预约</h3><button class="btn btn-ghost btn-sm" onclick="CAMPUS.toast(\'日历视图开发中\')">' + CAMPUS.icon("calendar", "icon-sm") + " 日历视图</button></div>" +
+      '<div class="grid grid-4">' + r.venues.map(v =>
+        '<div class="venue-card" onclick="CAMPUS.toast(\'' + v.name + " 预约页面已打开\',\'info\')\">" +
+          '<div class="venue-icon">' + CAMPUS.icon("building") + "</div>" +
+          '<div style="font-weight:700;font-size:13px;margin-bottom:4px">' + v.name + "</div>" +
+          '<div class="text-muted" style="font-size:11px;margin-bottom:8px">' + CAMPUS.icon("users", "icon-sm") + " 容纳 " + v.capacity + " 人</div>" +
+          '<div class="text-muted" style="font-size:11px;margin-bottom:8px">' + v.equipment + "</div>" +
+          CAMPUS.shell.statusTag(v.status) +
+        "</div>"
+      ).join("") + "</div>" +
+    "</section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="card"><h3 style="margin-top:0">物资库存</h3>' +
+        r.items.map((it, i) =>
+          '<div class="item-row"><div class="item-icon">' + (itemEmojis[i] || "📦") + '</div><div style="flex:1"><div style="font-weight:600;font-size:13px">' + it.name + '</div><div class="text-muted" style="font-size:11px">可用 ' + it.available + "/" + it.total + (it.myBorrow ? " · 我借用 " + it.myBorrow : "") + "</div></div>" +
+          '<div style="width:80px"><div class="progress"><div class="progress-bar" style="width:' + Math.round(it.available / it.total * 100) + '%"></div></div></div>' +
+          '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'已申请借用 ' + it.name + "',\'success\')\">借用</button></div>"
+        ).join("") +
+      "</div>" +
+
+      '<div class="card"><h3 style="margin-top:0">我的借用</h3>' +
+        r.myBorrows.map(b =>
+          '<div class="borrow-card mb-2"><div class="item-icon">' + CAMPUS.icon("box", "icon-sm") + '</div><div style="flex:1"><div style="font-weight:600;font-size:13px">' + b.item + ' × ' + b.count + '</div><div class="text-muted" style="font-size:11px">' + b.borrowDate + " → " + b.returnDate + "</div></div>" +
+          '<div style="text-align:right">' + CAMPUS.shell.statusTag(b.status) + '<button class="btn btn-ghost btn-sm mt-2" onclick="CAMPUS.toast(\'' + b.item + ' 已归还\',\'success\')">归还</button></div></div>'
+        ).join("") +
+      "</div>" +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+
+  document.getElementById("newBorrowBtn").onclick = () => CAMPUS.modal({
+    title: "新增借用申请",
+    body:
+      '<div class="field"><label class="field-label">借用类型</label><select class="select"><option>物资借用</option><option>场地预约</option></select></div>' +
+      '<div class="field"><label class="field-label">物资 / 场地</label><select class="select"><option>便携投影仪</option><option>无线麦克风</option><option>笔记本电脑</option><option>会议室B201</option><option>研讨室B105</option></select></div>' +
+      '<div class="grid grid-2"><div class="field"><label class="field-label">数量</label><input class="input" type="number" value="1" min="1"></div>' +
+      '<div class="field"><label class="field-label">借用日期</label><input class="input" type="date"></div></div>' +
+      '<div class="field"><label class="field-label">预计归还日期</label><input class="input" type="date"></div>' +
+      '<div class="field"><label class="field-label">借用事由</label><textarea class="textarea" placeholder="请说明借用用途…"></textarea></div>',
+    onOk: () => CAMPUS.toast("借用申请已提交", "success")
+  });
+</script>
+</body>
+</html>
