@@ -1,0 +1,121 @@
+/* ============================================================
+   Campus Life System · Theme Tokens (Minimalist Modern)
+   ============================================================ */
+:root {
+  /* —— 基础色板 —— */
+  --bg: #FAFAFA;
+  --bg-elevated: #FFFFFF;
+  --fg: #0F172A;
+  --fg-muted: #64748B;
+  --fg-subtle: #94A3B8;
+  --muted: #F1F5F9;
+  --muted-2: #E2E8F0;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --card: #FFFFFF;
+  --ring: #0052FF;
+
+  /* —— 主品牌色（Electric Blue 渐变） —— */
+  --accent: #0052FF;
+  --accent-2: #4D7CFF;
+  --accent-soft: rgba(0, 82, 255, 0.08);
+  --accent-fg: #FFFFFF;
+  --accent-grad: linear-gradient(135deg, #0052FF 0%, #4D7CFF 100%);
+  --accent-grad-soft: linear-gradient(135deg, rgba(0,82,255,.12) 0%, rgba(77,124,255,.12) 100%);
+
+  /* —— 角色主题色 —— */
+  --role-student: #0052FF;
+  --role-student-2: #4D7CFF;
+  --role-staff: #0EA968;
+  --role-staff-2: #34D399;
+  --role-admin: #6D28D9;
+  --role-admin-2: #A78BFA;
+
+  /* —— 语义色 —— */
+  --success: #10B981;
+  --success-soft: rgba(16, 185, 129, 0.1);
+  --warning: #F59E0B;
+  --warning-soft: rgba(245, 158, 11, 0.1);
+  --danger: #EF4444;
+  --danger-soft: rgba(239, 68, 68, 0.1);
+  --info: #0EA5E9;
+  --info-soft: rgba(14, 165, 233, 0.1);
+
+  /* —— 阴影系统 —— */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.08);
+  --shadow-xl: 0 20px 25px rgba(0,0,0,0.1);
+  --shadow-accent: 0 4px 14px rgba(0,82,255,0.25);
+  --shadow-accent-lg: 0 8px 24px rgba(0,82,255,0.35);
+
+  /* —— 圆角 —— */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* —— 字体 —— */
+  --font-display: "Plus Jakarta Sans", "PingFang SC", "Microsoft YaHei UI", sans-serif;
+  --font-ui: "Inter", "Noto Sans SC", "Microsoft YaHei UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+
+  /* —— 动效 —— */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 200ms;
+  --dur-slow: 400ms;
+
+  /* —— 布局 —— */
+  --sidebar-w: 248px;
+  --sidebar-w-collapsed: 76px;
+  --header-h: 64px;
+  --content-max: 1280px;
+}
+
+/* 角色主题色注入 */
+[data-role="student"] {
+  --accent: var(--role-student);
+  --accent-2: var(--role-student-2);
+  --accent-soft: rgba(0, 82, 255, 0.08);
+  --ring: var(--role-student);
+  --accent-grad: linear-gradient(135deg, #0052FF 0%, #4D7CFF 100%);
+  --accent-grad-soft: linear-gradient(135deg, rgba(0,82,255,.12) 0%, rgba(77,124,255,.12) 100%);
+  --shadow-accent: 0 4px 14px rgba(0,82,255,0.25);
+  --shadow-accent-lg: 0 8px 24px rgba(0,82,255,0.35);
+}
+[data-role="staff"] {
+  --accent: var(--role-staff);
+  --accent-2: var(--role-staff-2);
+  --accent-soft: rgba(14, 169, 104, 0.1);
+  --ring: var(--role-staff);
+  --accent-grad: linear-gradient(135deg, #0EA968 0%, #34D399 100%);
+  --accent-grad-soft: linear-gradient(135deg, rgba(14,169,104,.12) 0%, rgba(52,211,153,.12) 100%);
+  --shadow-accent: 0 4px 14px rgba(14,169,104,0.25);
+  --shadow-accent-lg: 0 8px 24px rgba(14,169,104,0.35);
+}
+[data-role="admin"] {
+  --accent: var(--role-admin);
+  --accent-2: var(--role-admin-2);
+  --accent-soft: rgba(109, 40, 217, 0.1);
+  --ring: var(--role-admin);
+  --accent-grad: linear-gradient(135deg, #6D28D9 0%, #A78BFA 100%);
+  --accent-grad-soft: linear-gradient(135deg, rgba(109,40,217,.12) 0%, rgba(167,139,250,.12) 100%);
+  --shadow-accent: 0 4px 14px rgba(109,40,217,0.25);
+  --shadow-accent-lg: 0 8px 24px rgba(109,40,217,0.35);
+}
+
+/* 暗色模式 */
+[data-theme="dark"] {
+  --bg: #0B1120;
+  --bg-elevated: #131C31;
+  --fg: #E2E8F0;
+  --fg-muted: #94A3B8;
+  --fg-subtle: #64748B;
+  --muted: #1E293B;
+  --muted-2: #334155;
+  --border: #1E293B;
+  --border-strong: #334155;
+  --card: #131C31;
+}
