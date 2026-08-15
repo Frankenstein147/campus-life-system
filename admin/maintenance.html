@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="admin">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系统维护 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .health-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .health-label { font-size: 11px; color: var(--fg-muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .health-bar { height: 6px; background: var(--muted); border-radius: 3px; overflow: hidden; }
+  .health-fill { height: 100%; border-radius: 3px; transition: width .6s var(--ease); }
+  .log-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; font-family: var(--font-mono); }
+  .log-row:last-child { border-bottom: none; }
+  .log-time { color: var(--fg-subtle); flex-shrink: 0; }
+  .log-level { padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .log-INFO { background: var(--info-soft); color: var(--info); }
+  .log-WARN { background: var(--warning-soft); color: var(--warning); }
+  .log-ERROR { background: var(--danger-soft); color: var(--danger); }
+  .log-msg { color: var(--fg); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .config-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .config-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "运维管理", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "users", label: "用户管理", icon: "users", href: "users.html" },
+      { key: "tickets", label: "工单运维", icon: "ticket", href: "tickets.html", badge: "37" },
+      { key: "finance", label: "财务对账", icon: "wallet", href: "finance.html" },
+      { key: "analytics", label: "数据统计分析", icon: "chart", href: "analytics.html" },
+      { key: "maintenance", label: "系统维护", icon: "settings", href: "maintenance.html" },
+      { key: "extensions", label: "拓展增值", icon: "plug", href: "extensions.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "admin", nav, title: "系统维护 · 管理员端", active: "maintenance" });
+  const sys = CAMPUS.mock.admin.system;
+
+  function healthItem(label, val, color) {
+    return '<div class="health-card"><div class="health-label"><span>' + label + '</span><strong>' + val + '%</strong></div><div class="health-bar"><div class="health-fill" style="width:' + val + '%;background:' + color + '"></div></div></div>';
+  }
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "管理员端", href: "index.html" }, { label: "系统维护" }], "系统维护", "服务监控、日志审计、配置管理与运维操作",
+      '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'系统已重启\',\'warning\')">' + CAMPUS.icon("refresh", "icon-sm") + " 重启服务</button>") +
+
+    '<section class="grid grid-4 mb-4">' +
+      '<div class="stat-card"><div class="stat-icon">' + CAMPUS.icon("activity") + '</div><p class="stat-label">系统可用率</p><p class="stat-value" style="font-size:1.4rem">' + sys.health.uptime + '</p><span class="stat-trend" style="color:var(--success)">' + CAMPUS.icon("check", "icon-sm") + " 稳定运行</span></div>" +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--info-soft);color:var(--info)">' + CAMPUS.icon("zap") + '</div><p class="stat-label">当前 QPS</p><p class="stat-value">' + sys.health.qps.toLocaleString() + '</p><span class="stat-trend" style="color:var(--fg-muted)">请求/秒</span></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--success-soft);color:var(--success)">' + CAMPUS.icon("cpu") + '</div><p class="stat-label">在线服务</p><p class="stat-value">' + sys.services.filter(s => s.status === "运行中").length + "/" + sys.services.length + '</p><span class="stat-trend" style="color:var(--success)">正常</span></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--warning-soft);color:var(--warning)">' + CAMPUS.icon("alert") + '</div><p class="stat-label">告警数</p><p class="stat-value">1</p><span class="stat-trend" style="color:var(--warning)">消息服务降级</span></div>' +
+    "</section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="card"><h3 style="margin-top:0">资源监控</h3>' +
+        '<div class="grid grid-2 gap-2">' +
+          healthItem("CPU 使用率", sys.health.cpu, "var(--accent)") +
+          healthItem("内存使用率", sys.health.memory, "var(--info)") +
+          healthItem("磁盘使用率", sys.health.disk, "var(--success)") +
+          healthItem("网络负载", sys.health.network, "var(--warning)") +
+        "</div>" +
+        '<div class="flex items-center justify-between mt-3" style="background:var(--muted);border-radius:var(--radius);padding:12px;font-size:12px"><span class="text-muted">系统已运行</span><strong style="color:var(--fg);font-family:var(--font-mono)">128 天 6 小时</strong></div>' +
+      "</div>" +
+
+      '<div class="card"><h3 style="margin-top:0">服务状态</h3>' +
+        sys.services.map(s =>
+          '<div class="config-row"><div class="flex items-center gap-3"><div style="width:8px;height:8px;border-radius:50%;background:' + (s.status === "运行中" ? "var(--success)" : "var(--warning)") + ';animation:pulse 2s infinite"></div><div><div style="font-weight:600;font-size:13px">' + s.name + '</div><div class="text-muted" style="font-size:11px">延迟 ' + s.latency + " · 可用率 " + s.uptime + "</div></div></div>" +
+          '<div class="flex gap-2"><button class="btn btn-ghost btn-sm" onclick="CAMPUS.toast(\'' + s.name + ' 已重启\')">重启</button><button class="btn btn-ghost btn-sm" onclick="CAMPUS.toast(\'日志已打开\')">日志</button></div></div>'
+        ).join("") +
+      "</div>" +
+    "</section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">系统日志</h3><div class="flex gap-2"><select class="select" style="width:auto;font-size:11px"><option>全部级别</option><option>INFO</option><option>WARN</option><option>ERROR</option></select><span class="tag tag-success tag-dot">实时</span></div></div>' +
+        sys.logs.map(l =>
+          '<div class="log-row"><span class="log-time">' + l.time + '</span><span class="log-level log-' + l.level + '">' + l.level + '</span><span class="log-msg">' + l.msg + "</span></div>"
+        ).join("") +
+        '<button class="btn btn-ghost btn-sm btn-block mt-2" onclick="CAMPUS.toast(\'完整日志已打开\')">查看全部</button>' +
+      "</div>" +
+
+      '<div class="card"><h3 style="margin-top:0">系统配置</h3>' +
+        '<div class="config-row"><div><div style="font-weight:600;font-size:13px">维护模式</div><div class="text-muted" style="font-size:11px">开启后仅管理员可访问</div></div><label class="switch"><input type="checkbox"><span class="switch-slider"></span></label></div>' +
+        '<div class="config-row"><div><div style="font-weight:600;font-size:13px">新用户注册</div><div class="text-muted" style="font-size:11px">允许学生自助注册</div></div><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></div>' +
+        '<div class="config-row"><div><div style="font-weight:600;font-size:13px">消息推送</div><div class="text-muted" style="font-size:11px">站内 + 短信 + 微信</div></div><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></div>' +
+        '<div class="config-row"><div><div style="font-weight:600;font-size:13px">自动备份</div><div class="text-muted" style="font-size:11px">每日 02:00 自动备份数据库</div></div><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></div>' +
+        '<div class="config-row"><div><div style="font-weight:600;font-size:13px">二次验证</div><div class="text-muted" style="font-size:11px">管理员登录需短信验证</div></div><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></div>' +
+      "</div>" +
+    "</section>" +
+
+    '<section class="card"><h3 style="margin-top:0">运维操作</h3>' +
+      '<div class="grid grid-4">' +
+        '<button class="btn btn-outline" onclick="CAMPUS.toast(\'缓存已清理\',\'success\')">' + CAMPUS.icon("refresh", "icon") + " 清理缓存</button>" +
+        '<button class="btn btn-outline" onclick="CAMPUS.toast(\'数据库已备份\',\'success\')">' + CAMPUS.icon("database", "icon") + " 数据备份</button>" +
+        '<button class="btn btn-outline" onclick="CAMPUS.toast(\'日志已导出\',\'success\')">' + CAMPUS.icon("download", "icon") + " 导出日志</button>" +
+        '<button class="btn btn-outline" onclick="CAMPUS.toast(\'配置已重载\',\'success\')">' + CAMPUS.icon("settings", "icon") + " 重载配置</button>" +
+        '<button class="btn btn-outline" onclick="CAMPUS.toast(\'SSL 证书有效期 86 天\',\'info\')">' + CAMPUS.icon("shield", "icon") + " 证书检查</button>" +
+        '<button class="btn btn-outline" onclick="CAMPUS.toast(\'已进入维护模式\',\'warning\')">' + CAMPUS.icon("alert", "icon") + " 维护模式</button>" +
+        '<button class="btn btn-outline" onclick="CAMPUS.toast(\'健康检查完成\',\'success\')">' + CAMPUS.icon("activity", "icon") + " 健康检查</button>" +
+        '<button class="btn btn-danger" onclick="CAMPUS.toast(\'请确认操作\',\'danger\')">' + CAMPUS.icon("x", "icon") + " 紧急下线</button>" +
+      "</div>" +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+</script>
+</body>
+</html>
