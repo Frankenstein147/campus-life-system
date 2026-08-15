@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="student">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>餐饮服务 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .balance-card { background: var(--accent-grad); border-radius: var(--radius-md); padding: 24px; color: #fff; position: relative; overflow: hidden; }
+  .balance-card::before { content: ""; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; background: rgba(255,255,255,.1); border-radius: 50%; }
+  .balance-card::after { content: ""; position: absolute; bottom: -60px; right: 20px; width: 120px; height: 120px; background: rgba(255,255,255,.08); border-radius: 50%; }
+  .balance-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; margin: 4px 0; letter-spacing: -0.02em; position: relative; }
+  .hall-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; transition: all var(--dur) var(--ease); cursor: pointer; }
+  .hall-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .hall-name { font-weight: 700; font-size: 14px; margin: 0 0 4px; }
+  .hall-meta { display: flex; gap: 12px; font-size: 11px; color: var(--fg-muted); margin-bottom: 8px; }
+  .menu-section { margin-bottom: 20px; }
+  .menu-card { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); transition: var(--dur); }
+  .menu-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .menu-thumb { width: 48px; height: 48px; border-radius: var(--radius); background: var(--accent-grad-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+  .order-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .order-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "主导航", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "dorm", label: "宿舍管理", icon: "home", href: "dorm.html" },
+      { key: "dining", label: "餐饮服务", icon: "utensils", href: "dining.html" },
+      { key: "repair", label: "后勤报修", icon: "wrench", href: "repair.html", badge: "2" },
+      { key: "access", label: "门禁出行", icon: "door", href: "access.html" },
+      { key: "social", label: "校园社交", icon: "chat", href: "social.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "student", nav, title: "餐饮服务 · 学生端", active: "dining" });
+  const d = CAMPUS.mock.dining;
+
+  const foodEmojis = ["🍚","🍜","🥘","🍲","🥗","🍗","🐟","🥞","🥟","🍳","🍔","🥪"];
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "学生端", href: "index.html" }, { label: "餐饮服务" }], "餐饮服务", "在线点餐、食堂导航、订单管理与账户充值",
+      '<button class="btn btn-primary btn-sm" onclick="CAMPUS.toast(\'充值页面开发中\',\'info\')">' + CAMPUS.icon("wallet", "icon-sm") + " 充值</button>") +
+
+    '<section class="grid grid-3 mb-4">' +
+      '<div class="balance-card"><div style="font-size:12px;opacity:.85;position:relative">校园卡余额</div><div class="balance-num">¥' + d.balance.toFixed(2) + '</div><div style="font-size:12px;opacity:.85;position:relative">本月补贴 ¥' + d.subsidy.toFixed(2) + " 已到账</div></div>" +
+      '<div class="card stat-card"><div class="stat-icon">' + CAMPUS.icon("utensils") + '</div><p class="stat-label">本月消费</p><p class="stat-value">¥1,328</p><span class="stat-trend" style="color:var(--success)">' + CAMPUS.icon("arrowDown", "icon-sm") + " 较上月 -8%</span></div>" +
+      '<div class="card stat-card"><div class="stat-icon">' + CAMPUS.icon("calendar") + '</div><p class="stat-label">用餐次数</p><p class="stat-value">86</p><span class="stat-trend" style="color:var(--fg-muted)">日均 2.8 次</span></div>' +
+    "</section>" +
+
+    '<section class="card mb-4"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">食堂导航</h3><span class="text-muted" style="font-size:12px">共 ' + d.halls.length + " 个食堂</span></div>" +
+      '<div class="grid grid-4">' + d.halls.map(h =>
+        '<div class="hall-card" onclick="CAMPUS.toast(\'已切换至 ' + h.name + '\',\'success\')">' +
+          '<div class="flex items-center justify-between"><div class="hall-name">' + h.name + "</div>" + CAMPUS.shell.statusTag(h.crowd) + "</div>" +
+          '<div class="hall-meta"><span>' + CAMPUS.icon("clock", "icon-sm") + " " + h.open + '</span><span>' + CAMPUS.icon("map", "icon-sm") + " " + h.distance + "</span></div>" +
+          '<div class="flex items-center gap-2"><span style="color:var(--warning);font-size:13px">' + CAMPUS.icon("star", "icon-sm") + '</span><span style="font-weight:600;font-size:13px">' + h.rating + '<span class="text-muted" style="font-size:11px">评分</span></div>' +
+        "</div>"
+      ).join("") + "</div>" +
+    "</section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">今日菜单</h3><div class="tabs" style="margin:0;border:none" id="menuTabs"><span class="tab active">全部</span></div></div>' +
+        d.menus.map(m =>
+          '<div class="menu-section"><div class="tag tag-accent mb-2">' + m.time + "</div>" +
+          m.items.map((it, idx) =>
+            '<div class="menu-card mb-2"><div class="menu-thumb">' + (foodEmojis[idx % foodEmojis.length]) + '</div><div style="flex:1"><div style="font-weight:600;font-size:13px">' + it.name + (it.hot ? ' <span class="tag tag-danger" style="font-size:9px">HOT</span>' : "") + '</div><div class="text-muted" style="font-size:11px">' + it.hall + " · " + it.cal + "kcal</div></div>" +
+            '<div style="text-align:right"><div class="text-accent" style="font-weight:700;font-size:15px">¥' + it.price + '</div><button class="btn btn-outline btn-sm mt-2" onclick="CAMPUS.toast(\'已加入购物车: ' + it.name + "\',\'success\')\">" + CAMPUS.icon("plus", "icon-sm") + " 点餐</button></div></div>"
+          ).join("") + "</div>"
+        ).join("") +
+      "</div>" +
+
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">最近订单</h3><a class="text-accent" href="#" style="font-size:12px" onclick="CAMPUS.toast(\'订单中心开发中\');return false">查看全部 →</a></div>' +
+        d.orders.map(o =>
+          '<div class="order-row"><div style="flex:1"><div style="font-weight:600;font-size:13px">' + o.items + '</div><div class="text-muted" style="font-size:11px">' + o.id + " · " + o.time.slice(5, 16) + "</div></div>" +
+          '<div style="text-align:right"><div style="font-weight:700;color:var(--accent)">¥' + o.amount + "</div>" + CAMPUS.shell.statusTag(o.status) + "</div></div>"
+        ).join("") +
+        '<button class="btn btn-outline btn-block mt-3" onclick="CAMPUS.toast(\'历史订单加载完成\',\'success\')">' + CAMPUS.icon("refresh", "icon-sm") + " 加载更多</button>" +
+      "</div>" +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+</script>
+</body>
+</html>
