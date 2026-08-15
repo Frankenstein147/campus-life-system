@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="admin">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用户管理 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "运维管理", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "users", label: "用户管理", icon: "users", href: "users.html" },
+      { key: "tickets", label: "工单运维", icon: "ticket", href: "tickets.html", badge: "37" },
+      { key: "finance", label: "财务对账", icon: "wallet", href: "finance.html" },
+      { key: "analytics", label: "数据统计分析", icon: "chart", href: "analytics.html" },
+      { key: "maintenance", label: "系统维护", icon: "settings", href: "maintenance.html" },
+      { key: "extensions", label: "拓展增值", icon: "plug", href: "extensions.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "admin", nav, title: "用户管理 · 管理员端", active: "users" });
+  const users = CAMPUS.mock.admin.users;
+
+  const roleTag = { "学生": "accent", "教职工": "success", "管理员": "warning" };
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "管理员端", href: "index.html" }, { label: "用户管理" }], "用户管理", "全校园用户账号、角色、权限与状态管理",
+      '<button class="btn btn-primary btn-sm" id="newUserBtn">' + CAMPUS.icon("plus", "icon-sm") + " 新建用户</button>") +
+
+    '<section class="grid grid-4 mb-4">' +
+      '<div class="stat-card"><div class="stat-icon">' + CAMPUS.icon("users") + '</div><p class="stat-label">总用户数</p><p class="stat-value">12,486</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--accent-soft);color:var(--accent)">' + CAMPUS.icon("graduation") + '</div><p class="stat-label">学生</p><p class="stat-value">11,820</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--success-soft);color:var(--success)">' + CAMPUS.icon("briefcase") + '</div><p class="stat-label">教职工</p><p class="stat-value">642</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--warning-soft);color:var(--warning)">' + CAMPUS.icon("shield") + '</div><p class="stat-label">管理员</p><p class="stat-value">24</p></div>' +
+    "</section>" +
+
+    '<section class="card mb-4"><div class="flex items-center gap-3 flex-wrap">' +
+      '<div class="input-group" style="flex:1;min-width:240px"><span class="input-icon">' + CAMPUS.icon("search", "icon-sm") + '</span><input class="input" placeholder="搜索用户名、学号/工号、学院…"></div>' +
+      '<select class="select" style="width:auto"><option>全部角色</option><option>学生</option><option>教职工</option><option>管理员</option></select>' +
+      '<select class="select" style="width:auto"><option>全部状态</option><option>正常</option><option>冻结</option></select>' +
+      '<select class="select" style="width:auto"><option>全部学院</option><option>计算机学院</option><option>电子学院</option><option>数学学院</option></select>' +
+      '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'已应用筛选\')">' + CAMPUS.icon("filter", "icon-sm") + " 筛选</button>" +
+    "</div></section>" +
+
+    '<section class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">用户列表</h3><div class="flex gap-2"><button class="btn btn-ghost btn-sm" onclick="CAMPUS.toast(\'已导出用户数据\',\'success\')">' + CAMPUS.icon("download", "icon-sm") + " 导出</button><button class=\"btn btn-ghost btn-sm\" onclick=\"CAMPUS.toast(\'批量操作已打开\')\">" + CAMPUS.icon("more", "icon-sm") + " 批量</button></div></div>" +
+      '<div style="overflow-x:auto"><table class="table"><thead><tr><th><input type="checkbox"></th><th>用户ID</th><th>姓名</th><th>角色</th><th>所属单位</th><th>状态</th><th>注册日期</th><th>最近登录</th><th>操作</th></tr></thead><tbody>' +
+        users.map(u => "<tr><td><input type=\"checkbox\"></td><td><strong class=\"mono\" style=\"font-size:12px\">" + u.id + '</strong></td><td><div class="flex items-center gap-2"><div class="avatar avatar-sm">' + u.name.charAt(0) + '</div>' + u.name + "</div></td><td>" + CAMPUS.shell.tag(u.role, roleTag[u.role]) + "</td><td>" + u.dept + "</td><td>" + CAMPUS.shell.statusTag(u.status) + "</td><td>" + u.created + "</td><td>" + u.last + "</td><td><div class=\"flex gap-2\"><button class=\"btn btn-ghost btn-sm\" onclick=\"CAMPUS.toast('用户详情已打开')\">详情</button><button class=\"btn btn-ghost btn-sm\" onclick=\"CAMPUS.toast('已" + (u.status === "正常" ? "冻结" : "解冻") + "用户','warning')\">" + (u.status === "正常" ? "冻结" : "解冻") + "</button></div></td></tr>").join("") +
+      "</tbody></table></div>" +
+      '<div class="flex items-center justify-between mt-3" style="font-size:12px;color:var(--fg-muted)"><span>共 12,486 条 · 显示 ' + users.length + ' 条</span><div class="flex gap-2"><button class="btn btn-ghost btn-sm">上一页</button><button class="btn btn-outline btn-sm">1</button><button class="btn btn-ghost btn-sm">2</button><button class="btn btn-ghost btn-sm">3</button><button class="btn btn-ghost btn-sm">下一页</button></div></div>' +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+
+  document.getElementById("newUserBtn").onclick = () => CAMPUS.modal({
+    title: "新建用户",
+    body:
+      '<div class="grid grid-2"><div class="field"><label class="field-label">用户ID</label><input class="input" placeholder="自动生成或手动指定"></div>' +
+      '<div class="field"><label class="field-label">姓名</label><input class="input"></div></div>' +
+      '<div class="grid grid-2"><div class="field"><label class="field-label">角色</label><select class="select"><option>学生</option><option>教职工</option><option>管理员</option></select></div>' +
+      '<div class="field"><label class="field-label">所属单位</label><input class="input"></div></div>' +
+      '<div class="field"><label class="field-label">初始密码</label><input class="input" type="password" value="campus@2026"></div>' +
+      '<div class="field"><label class="field-label">联系方式</label><input class="input" placeholder="手机号 / 邮箱"></div>',
+    onOk: () => CAMPUS.toast("用户已创建", "success")
+  });
+</script>
+</body>
+</html>
