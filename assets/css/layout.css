@@ -1,0 +1,153 @@
+/* ============================================================
+   Campus Life System · App Shell Layout
+   ============================================================ */
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-rows: var(--header-h) 1fr;
+  grid-template-areas: "sidebar header" "sidebar main";
+  min-height: 100vh;
+  transition: grid-template-columns var(--dur) var(--ease);
+}
+.app.collapsed { grid-template-columns: var(--sidebar-w-collapsed) 1fr; }
+
+/* —— 侧边栏 —— */
+.sidebar {
+  grid-area: sidebar;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sidebar-brand {
+  padding: 18px 20px; display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border); height: var(--header-h);
+}
+.brand-logo {
+  width: 36px; height: 36px; border-radius: var(--radius); background: var(--accent-grad);
+  display: inline-flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0;
+  box-shadow: var(--shadow-accent);
+}
+.brand-text { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--fg); white-space: nowrap; overflow: hidden; }
+.brand-text small { display: block; font-size: 10px; font-weight: 500; color: var(--fg-muted); letter-spacing: .08em; text-transform: uppercase; }
+.app.collapsed .brand-text { display: none; }
+
+.sidebar-nav { padding: 12px 10px; flex: 1; }
+.nav-section { margin-bottom: 16px; }
+.nav-section-title { font-size: 10px; font-weight: 700; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: .1em; padding: 8px 12px; }
+.app.collapsed .nav-section-title { text-align: center; padding: 8px 0; font-size: 0; }
+.app.collapsed .nav-section-title::first-letter { font-size: 10px; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius);
+  color: var(--fg-muted); font-weight: 500; font-size: 13px; transition: all var(--dur) var(--ease);
+  margin-bottom: 2px; position: relative;
+}
+.nav-item:hover { background: var(--muted); color: var(--fg); }
+.nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.nav-item.active::before { content: ""; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); width: 3px; height: 18px; background: var(--accent); border-radius: 2px; }
+.nav-item .icon { flex-shrink: 0; }
+.nav-item .nav-badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: var(--radius-pill); font-weight: 700; }
+.app.collapsed .nav-item { justify-content: center; padding: 12px; }
+.app.collapsed .nav-item .nav-label, .app.collapsed .nav-item .nav-badge { display: none; }
+
+.sidebar-foot { padding: 12px; border-top: 1px solid var(--border); }
+.sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: var(--radius); transition: var(--dur); cursor: pointer; }
+.sidebar-user:hover { background: var(--muted); }
+.sidebar-user-info { flex: 1; min-width: 0; }
+.sidebar-user-name { font-size: 13px; font-weight: 600; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-user-role { font-size: 11px; color: var(--fg-muted); }
+.app.collapsed .sidebar-user-info, .app.collapsed .sidebar-user .icon:last-child { display: none; }
+
+/* —— 顶栏 —— */
+.header {
+  grid-area: header;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px; padding: 0 24px;
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(8px);
+}
+.header-toggle { width: 36px; height: 36px; border-radius: var(--radius); display: inline-flex; align-items: center; justify-content: center; color: var(--fg-muted); transition: var(--dur); }
+.header-toggle:hover { background: var(--muted); color: var(--fg); }
+.header-title { font-size: 16px; font-weight: 700; color: var(--fg); flex: 1; }
+.header-search { flex: 1; max-width: 360px; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.header-action { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--fg-muted); transition: var(--dur); position: relative; }
+.header-action:hover { background: var(--muted); color: var(--fg); }
+.header-action .dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid var(--card); }
+
+/* —— 主内容 —— */
+.main { grid-area: main; padding: 24px; min-width: 0; }
+.page-head { margin-bottom: 24px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.page-title { font-size: 1.5rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
+.page-desc { color: var(--fg-muted); margin: 4px 0 0; font-size: 13px; }
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg-muted); margin-bottom: 8px; }
+.breadcrumb a { color: var(--fg-muted); }
+.breadcrumb a:hover { color: var(--accent); }
+.breadcrumb-sep { color: var(--fg-subtle); }
+
+/* —— 网格布局 —— */
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-auto { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.flex-1 { flex: 1; }
+.flex-wrap { flex-wrap: wrap; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+.mt-4 { margin-top: 16px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-3 { margin-bottom: 12px; }
+.mb-4 { margin-bottom: 16px; }
+.w-full { width: 100%; }
+
+/* —— 登录页 —— */
+.auth-wrap { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+.auth-visual {
+  background: var(--accent-grad); position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: space-between; padding: 48px; color: #fff;
+}
+.auth-visual::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(255,255,255,.15) 1px, transparent 1px); background-size: 28px 28px; opacity: .5; }
+.auth-visual::after { content: ""; position: absolute; bottom: -100px; right: -100px; width: 400px; height: 400px; background: rgba(255,255,255,.1); border-radius: 50%; filter: blur(60px); }
+.auth-visual > * { position: relative; z-index: 1; }
+.auth-form-side { display: flex; align-items: center; justify-content: center; padding: 48px 24px; background: var(--bg); }
+.auth-card { width: 100%; max-width: 380px; }
+.auth-logo { width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--accent-grad); display: inline-flex; align-items: center; justify-content: center; color: #fff; margin-bottom: 24px; box-shadow: var(--shadow-accent); }
+
+/* 角色选择 */
+.role-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+.role-pick {
+  padding: 14px 8px; border: 1px solid var(--border-strong); border-radius: var(--radius);
+  text-align: center; cursor: pointer; transition: all var(--dur) var(--ease); background: var(--card);
+}
+.role-pick:hover { border-color: var(--accent); }
+.role-pick.active { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
+.role-pick-icon { width: 32px; height: 32px; border-radius: var(--radius); margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; color: #fff; }
+.role-pick-label { font-size: 12px; font-weight: 600; color: var(--fg); }
+
+/* —— 响应式 —— */
+@media (max-width: 1024px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .auth-wrap { grid-template-columns: 1fr; }
+  .auth-visual { display: none; }
+}
+@media (max-width: 768px) {
+  .app { grid-template-columns: 1fr; grid-template-areas: "header" "main"; }
+  .sidebar { position: fixed; left: -280px; top: 0; z-index: 200; width: var(--sidebar-w); transition: left var(--dur) var(--ease); }
+  .app.mobile-open .sidebar { left: 0; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .main { padding: 16px; }
+  .header { padding: 0 16px; }
+  .header-search { display: none; }
+}
