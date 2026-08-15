@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="admin">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据统计分析 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .chart-bar { display: flex; align-items: flex-end; gap: 6px; height: 200px; padding: 12px 0; }
+  .chart-col { flex: 1; background: var(--accent-grad); border-radius: 4px 4px 0 0; transition: var(--dur); position: relative; min-height: 4px; }
+  .chart-col:hover { opacity: .8; }
+  .chart-col:hover::after { content: attr(data-val); position: absolute; top: -22px; left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--card); padding: 2px 6px; border-radius: 4px; font-size: 10px; white-space: nowrap; }
+  .chart-labels { display: flex; gap: 6px; font-size: 10px; color: var(--fg-muted); }
+  .chart-labels span { flex: 1; text-align: center; }
+  .heat-cell { aspect-ratio: 1; border-radius: 4px; background: var(--muted); transition: var(--dur); cursor: pointer; }
+  .heat-cell:hover { transform: scale(1.1); }
+  .heat-1 { background: var(--accent-soft); }
+  .heat-2 { background: rgba(0,82,255,.25); }
+  .heat-3 { background: rgba(0,82,255,.5); }
+  .heat-4 { background: rgba(0,82,255,.75); }
+  .heat-5 { background: var(--accent); }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "运维管理", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "users", label: "用户管理", icon: "users", href: "users.html" },
+      { key: "tickets", label: "工单运维", icon: "ticket", href: "tickets.html", badge: "37" },
+      { key: "finance", label: "财务对账", icon: "wallet", href: "finance.html" },
+      { key: "analytics", label: "数据统计分析", icon: "chart", href: "analytics.html" },
+      { key: "maintenance", label: "系统维护", icon: "settings", href: "maintenance.html" },
+      { key: "extensions", label: "拓展增值", icon: "plug", href: "extensions.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "admin", nav, title: "数据统计分析 · 管理员端", active: "analytics" });
+  const an = CAMPUS.mock.admin.analytics;
+
+  const months = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+  const maxU = Math.max(...an.userTrend);
+  const chartBars = an.userTrend.map((v) => '<div class="chart-col" style="height:' + Math.round(v / maxU * 100) + '%" data-val="' + v.toLocaleString() + '"></div>').join("");
+
+  const hours = ["00","03","06","09","12","15","18","21"];
+  const days = ["周一","周二","周三","周四","周五","周六","周日"];
+  const heatLevels = ["", "heat-1", "heat-2", "heat-3", "heat-4", "heat-5"];
+  const heatHtml = days.map((d, di) =>
+    '<div style="display:grid;grid-template-columns:48px repeat(' + hours.length + ',1fr);gap:4px;align-items:center;margin-bottom:4px"><div style="font-size:11px;color:var(--fg-muted)">' + d + "</div>" +
+    hours.map((h, hi) => {
+      const level = Math.floor(Math.random() * 6);
+      return '<div class="heat-cell ' + heatLevels[level] + '" title="' + d + " " + h + ":00 活跃度 " + level + '"></div>';
+    }).join("") + "</div>"
+  ).join("");
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "管理员端", href: "index.html" }, { label: "数据统计分析" }], "数据统计分析", "用户行为、业务模块、满意度等全维度数据洞察",
+      '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'报表已生成\',\'success\')">' + CAMPUS.icon("download", "icon-sm") + " 导出报告</button>") +
+
+    '<section class="grid grid-4 mb-4">' +
+      '<div class="stat-card"><div class="stat-icon">' + CAMPUS.icon("users") + '</div><p class="stat-label">累计用户</p><p class="stat-value">12,886</p><span class="stat-trend" style="color:var(--success)">' + CAMPUS.icon("arrowUp", "icon-sm") + " +400</span></div>" +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--info-soft);color:var(--info)">' + CAMPUS.icon("activity") + '</div><p class="stat-label">今日活跃</p><p class="stat-value">' + an.activeToday.toLocaleString() + '</p><span class="stat-trend" style="color:var(--success)">' + CAMPUS.icon("arrowUp", "icon-sm") + " +12.4%</span></div>" +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--warning-soft);color:var(--warning)">' + CAMPUS.icon("star") + '</div><p class="stat-label">满意度</p><p class="stat-value">' + an.satisfaction + '</p><span class="stat-trend" style="color:var(--fg-muted)">5 分制</span></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--success-soft);color:var(--success)">' + CAMPUS.icon("clock") + '</div><p class="stat-label">峰值时段</p><p class="stat-value" style="font-size:1.2rem">' + an.peakHour + '</p><span class="stat-trend" style="color:var(--fg-muted)">午餐高峰</span></div>' +
+    "</section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">用户增长趋势</h3><div class="tabs" style="margin:0;border:none"><span class="tab active">月</span><span class="tab">周</span><span class="tab">日</span></div></div>' +
+        '<div class="chart-bar">' + chartBars + "</div>" +
+        '<div class="chart-labels">' + months.map(m => "<span>" + m + "</span>").join("") + "</div>" +
+      "</div>" +
+
+      '<div class="card"><h3 style="margin-top:0">业务模块使用频次</h3>' +
+        an.moduleUsage.map(m =>
+          '<div class="mb-2"><div class="flex items-center justify-between mb-1" style="font-size:12px"><span>' + m.name + '</span><strong>' + m.visits.toLocaleString() + "</strong></div><div class=\"progress\"><div class=\"progress-bar\" style=\"width:" + m.ratio + '%"></div></div></div>'
+        ).join("") +
+      "</div>" +
+    "</section>" +
+
+    '<section class="card mb-4"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">活跃度热力图</h3><div class="flex items-center gap-2" style="font-size:11px;color:var(--fg-muted)"><span>低</span>' + heatLevels.slice(1).map(h => '<div class="heat-cell ' + h + '" style="width:14px;height:14px"></div>').join("") + "<span>高</span></div></div>" +
+      '<div style="display:grid;grid-template-columns:48px repeat(' + hours.length + ',1fr);gap:4px;margin-bottom:4px"><div></div>' + hours.map(h => '<div style="text-align:center;font-size:10px;color:var(--fg-muted)">' + h + "</div>").join("") + "</div>" +
+      heatHtml +
+    "</section>" +
+
+    '<section class="grid grid-3">' +
+      '<div class="card"><h3 style="margin-top:0">用户角色分布</h3>' +
+        '<div class="flex items-center gap-3 mb-2"><div class="avatar avatar-sm" style="background:var(--accent-grad)">学</div><span style="flex:1;font-size:13px">学生</span><strong>91.8%</strong></div>' +
+        '<div class="flex items-center gap-3 mb-2"><div class="avatar avatar-sm" style="background:linear-gradient(135deg,#0EA968,#34D399)">工</div><span style="flex:1;font-size:13px">教职工</span><strong>5.0%</strong></div>' +
+        '<div class="flex items-center gap-3"><div class="avatar avatar-sm" style="background:linear-gradient(135deg,#6D28D9,#A78BFA)">管</div><span style="flex:1;font-size:13px">管理员</span><strong>0.2%</strong></div>' +
+      "</div>" +
+      '<div class="card"><h3 style="margin-top:0">满意度评分</h3><div style="text-align:center;padding:12px 0"><div style="font-family:var(--font-display);font-size:3rem;font-weight:800;color:var(--warning)">' + an.satisfaction + '</div><div class="text-muted" style="font-size:12px">综合评分（5 分制）</div></div>' +
+        '<div class="flex items-center justify-around" style="font-size:11px;color:var(--fg-muted)"><span>非常满意 62%</span><span>满意 28%</span><span>一般 8%</span></div>' +
+      "</div>" +
+      '<div class="card"><h3 style="margin-top:0">关键指标</h3>' +
+        '<div class="flex items-center justify-between mb-2" style="font-size:13px"><span class="text-muted">日均订单</span><strong>4,862</strong></div>' +
+        '<div class="flex items-center justify-between mb-2" style="font-size:13px"><span class="text-muted">日均门禁</span><strong>2,890</strong></div>' +
+        '<div class="flex items-center justify-between mb-2" style="font-size:13px"><span class="text-muted">工单闭环率</span><strong>96.8%</strong></div>' +
+        '<div class="flex items-center justify-between" style="font-size:13px"><span class="text-muted">平均响应</span><strong>2.4h</strong></div>' +
+      "</div>" +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+</script>
+</body>
+</html>
