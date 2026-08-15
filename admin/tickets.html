@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="admin">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工单运维 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .ticket-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; transition: var(--dur); }
+  .ticket-card:hover { box-shadow: var(--shadow-md); }
+  .sla-badge { font-size: 10px; padding: 2px 8px; border-radius: var(--radius-pill); font-weight: 600; }
+  .sla-normal { background: var(--success-soft); color: var(--success); }
+  .sla-warn { background: var(--warning-soft); color: var(--warning); }
+  .sla-danger { background: var(--danger-soft); color: var(--danger); }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "运维管理", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "users", label: "用户管理", icon: "users", href: "users.html" },
+      { key: "tickets", label: "工单运维", icon: "ticket", href: "tickets.html", badge: "37" },
+      { key: "finance", label: "财务对账", icon: "wallet", href: "finance.html" },
+      { key: "analytics", label: "数据统计分析", icon: "chart", href: "analytics.html" },
+      { key: "maintenance", label: "系统维护", icon: "settings", href: "maintenance.html" },
+      { key: "extensions", label: "拓展增值", icon: "plug", href: "extensions.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "admin", nav, title: "工单运维 · 管理员端", active: "tickets" });
+  const tickets = CAMPUS.mock.admin.tickets;
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "管理员端", href: "index.html" }, { label: "工单运维" }], "工单运维中心", "全校园工单的派工、跟踪、SLA 监控与统计分析",
+      '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'工单已导出\',\'success\')">' + CAMPUS.icon("download", "icon-sm") + " 导出</button>") +
+
+    '<section class="grid grid-4 mb-4">' +
+      '<div class="stat-card"><div class="stat-icon">' + CAMPUS.icon("ticket") + '</div><p class="stat-label">全部工单</p><p class="stat-value">' + tickets.length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--warning-soft);color:var(--warning)">' + CAMPUS.icon("clock") + '</div><p class="stat-label">待派工</p><p class="stat-value">' + tickets.filter(t => t.status === "待派工").length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--info-soft);color:var(--info)">' + CAMPUS.icon("activity") + '</div><p class="stat-label">处理中</p><p class="stat-value">' + tickets.filter(t => t.status === "处理中").length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--success-soft);color:var(--success)">' + CAMPUS.icon("check") + '</div><p class="stat-label">已完成</p><p class="stat-value">' + tickets.filter(t => t.status === "已完成").length + '</p></div>' +
+    "</section>" +
+
+    '<section class="card mb-4"><div class="tabs" id="ticketTabs"><span class="tab active">全部</span><span class="tab">待派工</span><span class="tab">处理中</span><span class="tab">已完成</span><span class="tab">紧急</span></div>' +
+      '<div style="overflow-x:auto"><table class="table"><thead><tr><th>工单号</th><th>类型</th><th>标题</th><th>申请人</th><th>优先级</th><th>状态</th><th>处理人</th><th>SLA</th><th>创建时间</th><th>操作</th></tr></thead><tbody>' +
+        tickets.map(t => {
+          const slaClass = t.priority === "紧急" ? "sla-danger" : "sla-normal";
+          return "<tr><td><strong class=\"mono\" style=\"font-size:11px\">" + t.id + '</strong></td><td><span class="tag">' + t.type + "</span></td><td><strong>" + t.title + "</strong></td><td>" + t.requester + "</td><td>" + (t.priority === "紧急" ? '<span class="tag tag-danger">紧急</span>' : '<span class="tag tag-info">普通</span>') + "</td><td>" + CAMPUS.shell.statusTag(t.status) + "</td><td>" + (t.assignee || '<span class="text-muted">—</span>') + "</td><td><span class=\"sla-badge " + slaClass + '">' + t.sla + "</span></td><td>" + t.created.slice(5, 16) + "</td><td><div class=\"flex gap-2\"><button class=\"btn btn-ghost btn-sm\" onclick=\"CAMPUS.toast('工单详情已打开')\">详情</button>" + (t.status === "待派工" ? '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'派工页面已打开\')">派工</button>' : "") + "</div></td></tr>";
+        }).join("") +
+      "</tbody></table></div>" +
+    "</section>" +
+
+    '<section class="grid grid-3">' +
+      '<div class="card"><h3 style="margin-top:0">工单类型分布</h3>' +
+        '<div class="flex items-center gap-3 mb-2"><div style="width:8px;height:8px;border-radius:50%;background:var(--accent)"></div><span style="flex:1;font-size:13px">宿舍报修</span><strong>42%</strong></div>' +
+        '<div class="flex items-center gap-3 mb-2"><div style="width:8px;height:8px;border-radius:50%;background:var(--info)"></div><span style="flex:1;font-size:13px">办公报修</span><strong>23%</strong></div>' +
+        '<div class="flex items-center gap-3 mb-2"><div style="width:8px;height:8px;border-radius:50%;background:var(--success)"></div><span style="flex:1;font-size:13px">网络故障</span><strong>18%</strong></div>' +
+        '<div class="flex items-center gap-3"><div style="width:8px;height:8px;border-radius:50%;background:var(--warning)"></div><span style="flex:1;font-size:13px">其他</span><strong>17%</strong></div>' +
+      "</div>" +
+      '<div class="card"><h3 style="margin-top:0">SLA 达标率</h3><div style="text-align:center;padding:20px 0"><div style="font-family:var(--font-display);font-size:3rem;font-weight:800;color:var(--success)">96.8%</div><div class="text-muted" style="font-size:12px">本月工单按时闭环率</div></div>' +
+        '<div class="progress mb-2"><div class="progress-bar" style="width:96.8%"></div></div><div class="text-muted" style="font-size:11px">目标 ≥ 95%</div>' +
+      "</div>" +
+      '<div class="card"><h3 style="margin-top:0">处理人工作量</h3>' +
+        '<div class="flex items-center gap-3 mb-2"><div class="avatar avatar-sm">张</div><span style="flex:1;font-size:13px">张师傅</span><strong>28 单</strong></div>' +
+        '<div class="flex items-center gap-3 mb-2"><div class="avatar avatar-sm">李</div><span style="flex:1;font-size:13px">李师傅</span><strong>22 单</strong></div>' +
+        '<div class="flex items-center gap-3 mb-2"><div class="avatar avatar-sm">王</div><span style="flex:1;font-size:13px">王师傅</span><strong>18 单</strong></div>' +
+        '<div class="flex items-center gap-3"><div class="avatar avatar-sm">网</div><span style="flex:1;font-size:13px">网络组</span><strong>15 单</strong></div>' +
+      "</div>" +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+
+  main.querySelectorAll("#ticketTabs .tab").forEach(tab => {
+    tab.onclick = () => {
+      main.querySelectorAll("#ticketTabs .tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      CAMPUS.toast("已切换至 " + tab.textContent);
+    };
+  });
+</script>
+</body>
+</html>
