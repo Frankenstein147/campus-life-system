@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="staff">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通知下发 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .notice-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; transition: var(--dur); cursor: pointer; }
+  .notice-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+  .notice-title { font-weight: 700; font-size: 14px; margin: 0 0 6px; line-height: 1.4; }
+  .notice-meta { display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--fg-muted); }
+  .notice-progress { margin-top: 10px; }
+  .notice-progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--fg-muted); margin-bottom: 4px; }
+  .template-card { padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: var(--dur); }
+  .template-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "办公导航", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "attend", label: "考勤打卡", icon: "clock", href: "attendance.html" },
+      { key: "notice", label: "通知下发", icon: "bell", href: "notice.html" },
+      { key: "repair", label: "办公报修", icon: "wrench", href: "office-repair.html", badge: "1" },
+      { key: "resource", label: "场地物资借用", icon: "box", href: "resource.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "staff", nav, title: "通知下发 · 教职工端", active: "notice" });
+  const notices = CAMPUS.mock.staff.notices;
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "教职工端", href: "index.html" }, { label: "通知下发" }], "通知下发", "面向学生、教师、家长等多群体的通知发布与阅读追踪",
+      '<button class="btn btn-primary btn-sm" id="newNoticeBtn">' + CAMPUS.icon("plus", "icon-sm") + " 发布通知</button>") +
+
+    '<section class="grid grid-4 mb-4">' +
+      '<div class="stat-card"><div class="stat-icon">' + CAMPUS.icon("bell") + '</div><p class="stat-label">已发通知</p><p class="stat-value">' + notices.length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--success-soft);color:var(--success)">' + CAMPUS.icon("check") + '</div><p class="stat-label">已发布</p><p class="stat-value">' + notices.filter(n => n.status === "已发布").length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--info-soft);color:var(--info)">' + CAMPUS.icon("eye") + '</div><p class="stat-label">总阅读量</p><p class="stat-value">' + notices.reduce((s, n) => s + n.read, 0) + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--warning-soft);color:var(--warning)">' + CAMPUS.icon("users") + '</div><p class="stat-label">覆盖人数</p><p class="stat-value">' + notices.reduce((s, n) => s + n.total, 0) + '</p></div>' +
+    "</section>" +
+
+    '<section class="grid grid-3 mb-4">' +
+      '<div class="template-card" onclick="CAMPUS.toast(\'已套用教学通知模板\')"><div class="flex items-center gap-2 mb-2"><div style="width:32px;height:32px;border-radius:var(--radius);background:var(--accent-soft);color:var(--accent);display:inline-flex;align-items:center;justify-content:center">' + CAMPUS.icon("book", "icon-sm") + '</div><strong>教学通知</strong></div><div class="text-muted" style="font-size:11px">课程调整、考试安排、教学评估</div></div>' +
+      '<div class="template-card" onclick="CAMPUS.toast(\'已套用会议通知模板\')"><div class="flex items-center gap-2 mb-2"><div style="width:32px;height:32px;border-radius:var(--radius);background:var(--accent-soft);color:var(--accent);display:inline-flex;align-items:center;justify-content:center">' + CAMPUS.icon("users", "icon-sm") + '</div><strong>会议通知</strong></div><div class="text-muted" style="font-size:11px">院系会议、教研活动、行政会议</div></div>' +
+      '<div class="template-card" onclick="CAMPUS.toast(\'已套用活动通知模板\')"><div class="flex items-center gap-2 mb-2"><div style="width:32px;height:32px;border-radius:var(--radius);background:var(--accent-soft);color:var(--accent);display:inline-flex;align-items:center;justify-content:center">' + CAMPUS.icon("calendar", "icon-sm") + '</div><strong>活动通知</strong></div><div class="text-muted" style="font-size:11px">校园活动、社团招新、文体赛事</div></div>' +
+    "</section>" +
+
+    '<section class="grid grid-2">' + notices.map(n => {
+      const pct = Math.round(n.read / n.total * 100);
+      return '<div class="notice-card" onclick="CAMPUS.toast(\'已打开通知: ' + n.title + "',\'info\')\">" +
+        '<div class="flex items-center justify-between mb-2"><span class="tag tag-accent">' + n.scope + "</span>" + CAMPUS.shell.statusTag(n.status) + "</div>" +
+        '<div class="notice-title">' + n.title + "</div>" +
+        '<div class="notice-meta"><span>' + CAMPUS.icon("calendar", "icon-sm") + " " + n.published + "</span><span>" + CAMPUS.icon("eye", "icon-sm") + " " + n.read + "/" + n.total + "</span></div>" +
+        '<div class="notice-progress"><div class="notice-progress-label"><span>阅读率</span><span>' + pct + '%</span></div><div class="progress"><div class="progress-bar" style="width:' + pct + '%"></div></div></div>' +
+        '<div class="flex gap-2 mt-3"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();CAMPUS.toast(\'通知详情已打开\')">详情</button><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();CAMPUS.toast(\'已重新推送通知\',\'success\')">重推</button></div>' +
+      "</div>";
+    }).join("") + "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+
+  document.getElementById("newNoticeBtn").onclick = () => CAMPUS.modal({
+    title: "发布通知", width: "600px",
+    body:
+      '<div class="field"><label class="field-label">通知标题</label><input class="input" placeholder="请输入通知标题"></div>' +
+      '<div class="grid grid-2"><div class="field"><label class="field-label">通知范围</label><select class="select"><option>全院</option><option>毕业班</option><option>全体教师</option><option>科研团队</option><option>自定义</option></select></div>' +
+      '<div class="field"><label class="field-label">优先级</label><select class="select"><option>普通</option><option>重要</option><option>紧急</option></select></div></div>' +
+      '<div class="field"><label class="field-label">通知内容</label><textarea class="textarea" placeholder="请输入通知正文…" style="min-height:140px"></textarea></div>' +
+      '<div class="field"><label class="field-label">附件（可选）</label><button class="btn btn-outline btn-block">' + CAMPUS.icon("upload", "icon-sm") + " 上传附件</button></div>" +
+      '<div class="field"><label class="field-label">推送渠道</label><div class="flex gap-3" style="font-size:13px"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" checked> 站内</label><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" checked> 短信</label><label style="display:flex;align-items:center;gap:6px"><input type="checkbox"> 邮件</label><label style="display:flex;align-items:center;gap:6px"><input type="checkbox"> 微信</label></div></div>',
+    onOk: () => CAMPUS.toast("通知已发布", "success")
+  });
+</script>
+</body>
+</html>
