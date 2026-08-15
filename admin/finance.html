@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="admin">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财务对账 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .finance-hero { background: var(--accent-grad); border-radius: var(--radius-md); padding: 24px; color: #fff; position: relative; overflow: hidden; }
+  .finance-hero::before { content: ""; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; background: rgba(255,255,255,.1); border-radius: 50%; }
+  .finance-hero > * { position: relative; }
+  .donut-wrap { display: flex; align-items: center; gap: 20px; }
+  .donut { width: 160px; height: 160px; border-radius: 50%; flex-shrink: 0; position: relative; }
+  .donut::after { content: ""; position: absolute; inset: 24px; background: var(--card); border-radius: 50%; }
+  .donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1; }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "运维管理", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "users", label: "用户管理", icon: "users", href: "users.html" },
+      { key: "tickets", label: "工单运维", icon: "ticket", href: "tickets.html", badge: "37" },
+      { key: "finance", label: "财务对账", icon: "wallet", href: "finance.html" },
+      { key: "analytics", label: "数据统计分析", icon: "chart", href: "analytics.html" },
+      { key: "maintenance", label: "系统维护", icon: "settings", href: "maintenance.html" },
+      { key: "extensions", label: "拓展增值", icon: "plug", href: "extensions.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "admin", nav, title: "财务对账 · 管理员端", active: "finance" });
+  const f = CAMPUS.mock.admin.finance;
+
+  const colors = ["var(--accent)", "var(--info)", "var(--success)", "var(--warning)"];
+  let acc = 0;
+  const donutStops = f.channels.map((c, i) => {
+    const start = acc / 100 * 360;
+    acc += c.ratio;
+    const end = acc / 100 * 360;
+    return { color: colors[i], start, end, ...c };
+  });
+  const donutGrad = "conic-gradient(" + donutStops.map(s => s.color + " " + s.start + "deg " + s.end + "deg").join(", ") + ")";
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "管理员端", href: "index.html" }, { label: "财务对账" }], "财务对账中心", "校园各项收支流水、对账与财务报表",
+      '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'报表已导出\',\'success\')">' + CAMPUS.icon("download", "icon-sm") + " 导出报表</button>") +
+
+    '<section class="grid grid-4 mb-4">' +
+      '<div class="finance-hero"><div style="font-size:12px;opacity:.85">本月净收入</div><div style="font-family:var(--font-display);font-size:2.25rem;font-weight:800;margin:4px 0">¥3.28M</div><div style="font-size:12px;opacity:.85">较上月 +6.4%</div></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--success-soft);color:var(--success)">' + CAMPUS.icon("arrowDown") + '</div><p class="stat-label">本月收入</p><p class="stat-value">¥8.62M</p><span class="stat-trend" style="color:var(--success)">' + CAMPUS.icon("arrowUp", "icon-sm") + " +8.2%</span></div>" +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--danger-soft);color:var(--danger)">' + CAMPUS.icon("arrowUp") + '</div><p class="stat-label">本月支出</p><p class="stat-value">¥5.34M</p><span class="stat-trend" style="color:var(--danger)">' + CAMPUS.icon("arrowUp", "icon-sm") + " +3.1%</span></div>" +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--warning-soft);color:var(--warning)">' + CAMPUS.icon("clock") + '</div><p class="stat-label">待对账</p><p class="stat-value">¥186K</p><span class="stat-trend" style="color:var(--fg-muted)">23 笔</span></div>' +
+    "</section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="card"><h3 style="margin-top:0">收入构成</h3>' +
+        '<div class="donut-wrap"><div class="donut" style="background:' + donutGrad + '"><div class="donut-center"><div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800">¥8.62M</div><div class="text-muted" style="font-size:11px">总收入</div></div></div>' +
+        '<div style="flex:1">' + donutStops.map(s =>
+          '<div class="flex items-center gap-2 mb-2"><div style="width:10px;height:10px;border-radius:3px;background:' + s.color + '"></div><div style="flex:1;font-size:13px">' + s.name + '</div><strong style="font-size:13px">¥' + (s.amount / 10000).toFixed(1) + "万</strong></div>"
+        ).join("") + "</div></div>" +
+      "</div>" +
+
+      '<div class="card"><h3 style="margin-top:0">收支趋势</h3>' +
+        '<div class="chart-bar" style="display:flex;align-items:flex-end;gap:8px;height:180px;padding:12px 0">' +
+          [62, 58, 71, 68, 82, 78, 86, 92, 88, 95, 90, 86].map((v, i) =>
+            '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:60%;background:var(--accent-grad);border-radius:4px 4px 0 0;height:' + v + '%;min-height:4px"></div><div style="width:60%;background:var(--muted-2);border-radius:4px 4px 0 0;height:' + Math.round(v * 0.6) + '%;min-height:4px"></div></div>'
+          ).join("") +
+        "</div>" +
+        '<div class="flex items-center justify-between mt-2" style="font-size:11px;color:var(--fg-muted)"><span class="flex items-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--accent)"></div>收入</span><span class="flex items-center gap-2"><div style="width:10px;height:10px;border-radius:2px;background:var(--muted-2)"></div>支出</span></div>' +
+      "</div>" +
+    "</section>" +
+
+    '<section class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">最近流水</h3><div class="flex gap-2"><select class="select" style="width:auto"><option>全部类型</option><option>收入</option><option>支出</option></select><button class="btn btn-ghost btn-sm">' + CAMPUS.icon("filter", "icon-sm") + " 筛选</button></div></div>" +
+      '<div style="overflow-x:auto"><table class="table"><thead><tr><th>流水号</th><th>类型</th><th>分类</th><th>金额</th><th>事由</th><th>时间</th><th>渠道</th><th>状态</th></tr></thead><tbody>' +
+        f.records.map(r => "<tr><td><strong class=\"mono\" style=\"font-size:11px\">" + r.id + '</strong></td><td>' + (r.type === "收入" ? '<span class="tag tag-success">收入</span>' : '<span class="tag tag-danger">支出</span>') + "</td><td>" + r.category + "</td><td><strong style=\"color:" + (r.type === "收入" ? "var(--success)" : "var(--danger)") + '">' + (r.type === "收入" ? "+" : "-") + "¥" + r.amount.toLocaleString() + "</strong></td><td>" + r.subject + "</td><td>" + r.time + "</td><td>" + r.channel + "</td><td>" + CAMPUS.shell.statusTag("已完成") + "</td></tr>").join("") +
+      "</tbody></table></div>" +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+</script>
+</body>
+</html>
