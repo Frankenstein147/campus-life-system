@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="admin">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拓展增值功能 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .ext-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; transition: all var(--dur) var(--ease); position: relative; overflow: hidden; }
+  .ext-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .ext-icon { width: 48px; height: 48px; border-radius: var(--radius); background: var(--accent-grad-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; font-size: 22px; }
+  .ext-name { font-weight: 700; font-size: 15px; margin: 0 0 4px; }
+  .ext-desc { font-size: 12px; color: var(--fg-muted); line-height: 1.5; margin: 0 0 14px; min-height: 36px; }
+  .ext-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); }
+  .ext-version { font-family: var(--font-mono); font-size: 11px; color: var(--fg-subtle); }
+  .api-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 12px; }
+  .api-row:last-child { border-bottom: none; }
+  .api-method { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .api-GET { background: var(--success-soft); color: var(--success); }
+  .api-POST { background: var(--info-soft); color: var(--info); }
+  .api-PUT { background: var(--warning-soft); color: var(--warning); }
+  .api-DELETE { background: var(--danger-soft); color: var(--danger); }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "运维管理", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "users", label: "用户管理", icon: "users", href: "users.html" },
+      { key: "tickets", label: "工单运维", icon: "ticket", href: "tickets.html", badge: "37" },
+      { key: "finance", label: "财务对账", icon: "wallet", href: "finance.html" },
+      { key: "analytics", label: "数据统计分析", icon: "chart", href: "analytics.html" },
+      { key: "maintenance", label: "系统维护", icon: "settings", href: "maintenance.html" },
+      { key: "extensions", label: "拓展增值", icon: "plug", href: "extensions.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "admin", nav, title: "拓展增值功能 · 管理员端", active: "extensions" });
+  const exts = CAMPUS.mock.admin.extensions;
+  const emojis = ["🤖","🛒","💚","📅","🗺️","💳","🎓","⚡"];
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "管理员端", href: "index.html" }, { label: "拓展增值功能" }], "拓展增值功能", "校园生态拓展应用与开放接口管理，支持插件化共建",
+      '<button class="btn btn-primary btn-sm" onclick="CAMPUS.toast(\'拓展市场已打开\')">' + CAMPUS.icon("plus", "icon-sm") + " 接入新拓展</button>") +
+
+    '<section class="grid grid-4 mb-4">' +
+      '<div class="stat-card"><div class="stat-icon">' + CAMPUS.icon("plug") + '</div><p class="stat-label">已接入拓展</p><p class="stat-value">' + exts.length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--success-soft);color:var(--success)">' + CAMPUS.icon("check") + '</div><p class="stat-label">已上线</p><p class="stat-value">' + exts.filter(e => e.status === "已上线").length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--warning-soft);color:var(--warning)">' + CAMPUS.icon("activity") + '</div><p class="stat-label">开发/灰度</p><p class="stat-value">' + exts.filter(e => e.status === "开发中" || e.status === "灰度发布").length + '</p></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="background:var(--info-soft);color:var(--info)">' + CAMPUS.icon("layers") + '</div><p class="stat-label">规划中</p><p class="stat-value">' + exts.filter(e => e.status === "规划中").length + '</p></div>' +
+    "</section>" +
+
+    '<section class="card mb-4"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">拓展应用市场</h3><div class="flex gap-2"><select class="select" style="width:auto;font-size:12px"><option>全部状态</option><option>已上线</option><option>灰度发布</option><option>开发中</option><option>规划中</option></select></div></div>' +
+      '<div class="grid grid-3">' + exts.map((e, i) =>
+        '<div class="ext-card">' +
+          '<div class="ext-icon">' + (emojis[i] || "🔌") + "</div>" +
+          '<div class="ext-name">' + e.name + "</div>" +
+          '<div class="ext-desc">' + e.desc + "</div>" +
+          '<div class="flex items-center gap-2 mb-2">' + CAMPUS.shell.statusTag(e.status) + '<span class="ext-version">' + e.version + "</span></div>" +
+          '<div class="ext-foot">' +
+            '<div class="flex gap-2"><button class="btn btn-ghost btn-sm" onclick="CAMPUS.toast(\'已打开 ' + e.name + " 配置\')\">" + CAMPUS.icon("settings", "icon-sm") + ' 配置</button><button class="btn btn-ghost btn-sm" onclick="CAMPUS.toast(\'已查看 ' + e.name + " 文档\')\">" + CAMPUS.icon("book", "icon-sm") + " 文档</button></div>" +
+            (e.status === "已上线" ? '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'' + e.name + ' 已停用\',\'warning\')">停用</button>' : '<button class="btn btn-primary btn-sm" onclick="CAMPUS.toast(\'' + e.name + ' 已启用\',\'success\')">启用</button>') +
+          "</div>" +
+        "</div>"
+      ).join("") + "</div>" +
+    "</section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">开放接口（OpenAPI）</h3><button class="btn btn-ghost btn-sm" onclick="CAMPUS.toast(\'接口文档已打开\')">' + CAMPUS.icon("book", "icon-sm") + " 文档</button></div>" +
+        '<div class="api-row"><span class="api-method api-GET">GET</span><span style="flex:1;color:var(--fg)">/api/v1/users</span><span class="text-muted">用户列表</span></div>' +
+        '<div class="api-row"><span class="api-method api-POST">POST</span><span style="flex:1;color:var(--fg)">/api/v1/tickets</span><span class="text-muted">创建工单</span></div>' +
+        '<div class="api-row"><span class="api-method api-PUT">PUT</span><span style="flex:1;color:var(--fg)">/api/v1/tickets/:id</span><span class="text-muted">更新工单</span></div>' +
+        '<div class="api-row"><span class="api-method api-GET">GET</span><span style="flex:1;color:var(--fg)">/api/v1/finance/summary</span><span class="text-muted">财务概览</span></div>' +
+        '<div class="api-row"><span class="api-method api-POST">POST</span><span style="flex:1;color:var(--fg)">/api/v1/extensions/invoke</span><span class="text-muted">调用拓展</span></div>' +
+        '<div class="api-row"><span class="api-method api-DELETE">DEL</span><span style="flex:1;color:var(--fg)">/api/v1/cache/:key</span><span class="text-muted">清理缓存</span></div>' +
+      "</div>" +
+
+      '<div class="card"><h3 style="margin-top:0">拓展开发 SDK</h3>' +
+        '<div style="background:var(--muted);border-radius:var(--radius);padding:14px;font-family:var(--font-mono);font-size:11px;line-height:1.6;color:var(--fg);overflow-x:auto">' +
+          '<span style="color:var(--fg-subtle)">// 注册自定义拓展</span><br>' +
+          'CAMPUS.extensions.register({<br>' +
+          '&nbsp;&nbsp;name: <span style="color:var(--success)">"my-extension"</span>,<br>' +
+          '&nbsp;&nbsp;version: <span style="color:var(--success)">"1.0.0"</span>,<br>' +
+          '&nbsp;&nbsp;description: <span style="color:var(--success)">"我的拓展"</span>,<br>' +
+          '&nbsp;&nbsp;handler: <span style="color:var(--info)">async</span> (input) => {<br>' +
+          '&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--warning)">return</span> { result: input };<br>' +
+          '&nbsp;&nbsp;}<br>' +
+          "});" +
+        "</div>" +
+        '<button class="btn btn-outline btn-block mt-3" onclick="CAMPUS.toast(\'SDK 文档已打开\')">' + CAMPUS.icon("book", "icon-sm") + " 查看完整文档</button>" +
+      "</div>" +
+    "</section>" +
+
+    '<section class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">拓展调用演示</h3><span class="tag tag-accent">已注册 ' + CAMPUS.extensions.list().length + ' 个拓展</span></div>' +
+      '<div class="flex gap-2 mb-3"><input class="input" id="extQuery" placeholder="输入问题，调用智能问答拓展…"><button class="btn btn-primary" id="extInvoke">' + CAMPUS.icon("zap", "icon-sm") + " 调用接口</button></div>" +
+      '<div id="extResult" style="background:var(--muted);border-radius:var(--radius);padding:14px;font-size:13px;min-height:60px;color:var(--fg-muted)">等待调用…</div>' +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+
+  document.getElementById("extInvoke").onclick = async () => {
+    const q = document.getElementById("extQuery").value.trim() || "图书馆开放时间";
+    const result = document.getElementById("extResult");
+    result.innerHTML = '<span style="color:var(--fg-subtle)">调用中…</span>';
+    try {
+      const res = await CAMPUS.extensions.invoke("campus-qa", q);
+      result.innerHTML = '<strong style="color:var(--accent)">接口返回：</strong><br>' + res.answer + '<br><span style="font-size:11px;color:var(--fg-subtle);font-family:var(--font-mono)">source: ' + res.source + "</span>";
+    } catch (e) {
+      result.innerHTML = '<span style="color:var(--danger)">调用失败：' + e.message + "</span>";
+    }
+  };
+</script>
+</body>
+</html>
