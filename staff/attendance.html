@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="staff">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考勤打卡 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .clock-card { background: var(--accent-grad); border-radius: var(--radius-md); padding: 32px; color: #fff; text-align: center; position: relative; overflow: hidden; }
+  .clock-card::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(255,255,255,.15) 1px, transparent 1px); background-size: 28px 28px; opacity: .4; }
+  .clock-card > * { position: relative; }
+  .big-clock { font-family: var(--font-mono); font-size: 3.5rem; font-weight: 800; margin: 8px 0; letter-spacing: -0.03em; }
+  .clock-date { font-size: 14px; opacity: .85; }
+  .check-btn { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3); color: #fff; padding: 14px 32px; border-radius: var(--radius-pill); font-weight: 700; font-size: 15px; transition: var(--dur); display: inline-flex; align-items: center; gap: 8px; }
+  .check-btn:hover { background: #fff; color: var(--accent); }
+  .check-btn.done { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.2); cursor: not-allowed; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-head { text-align: center; font-size: 11px; color: var(--fg-muted); padding: 6px 0; font-weight: 600; }
+  .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 12px; transition: var(--dur); cursor: pointer; position: relative; }
+  .cal-day:hover { background: var(--muted); }
+  .cal-day.normal { background: var(--success-soft); color: var(--success); font-weight: 600; }
+  .cal-day.late { background: var(--warning-soft); color: var(--warning); font-weight: 600; }
+  .cal-day.absent { background: var(--danger-soft); color: var(--danger); font-weight: 600; }
+  .cal-day.today { background: var(--accent); color: #fff; font-weight: 700; }
+  .cal-day.future { color: var(--fg-subtle); }
+  .cal-day.other { opacity: .3; }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "办公导航", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "attend", label: "考勤打卡", icon: "clock", href: "attendance.html" },
+      { key: "notice", label: "通知下发", icon: "bell", href: "notice.html" },
+      { key: "repair", label: "办公报修", icon: "wrench", href: "office-repair.html", badge: "1" },
+      { key: "resource", label: "场地物资借用", icon: "box", href: "resource.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "staff", nav, title: "考勤打卡 · 教职工端", active: "attend" });
+  const att = CAMPUS.mock.staff.attendance;
+
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const today = now.getDate();
+  const weekDays = ["日", "一", "二", "三", "四", "五", "六"];
+
+  const records = att.records;
+  function dayStatus(d) {
+    if (d > today) return "future";
+    if (d === today) return "today";
+    const r = records.find(r => parseInt(r.date.slice(8)) === d);
+    if (!r) return d < today ? "absent" : "future";
+    if (r.status === "迟到") return "late";
+    return "normal";
+  }
+
+  let calHtml = weekDays.map(w => '<div class="cal-head">' + w + "</div>").join("");
+  for (let i = 0; i < firstDay; i++) calHtml += '<div class="cal-day other"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const st = dayStatus(d);
+    calHtml += '<div class="cal-day ' + st + '" onclick="CAMPUS.toast(\'2026-08-' + (d < 10 ? "0" + d : d) + " 考勤记录\')\">" + d + "</div>";
+  }
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "教职工端", href: "index.html" }, { label: "考勤打卡" }], "考勤打卡", "在线打卡、考勤记录与月度统计") +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="clock-card"><div class="clock-date">' + now.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" }) + "</div>" +
+        '<div class="big-clock" id="bigClock">' + now.toTimeString().slice(0, 8) + "</div>" +
+        '<div style="margin:16px 0">' +
+          '<button class="check-btn ' + (att.today.checkIn ? "done" : "") + '" id="checkInBtn">' + CAMPUS.icon("check", "icon-sm") + (att.today.checkIn ? " 已打卡 " + att.today.checkIn : " 上班打卡") + "</button> " +
+          '<button class="check-btn ' + (att.today.checkOut ? "done" : "") + '" id="checkOutBtn" style="margin-left:8px">' + CAMPUS.icon("check", "icon-sm") + (att.today.checkOut ? " 已打卡 " + att.today.checkOut : " 下班打卡") + "</button>" +
+        "</div>" +
+        '<div style="font-size:13px;opacity:.85;margin-top:8px">' + att.today.duration + " · 状态：" + att.today.status + "</div>" +
+      "</div>" +
+
+      '<div class="card"><h3 style="margin-top:0">本月统计</h3>' +
+        '<div class="grid grid-2 gap-3 mb-3">' +
+          '<div style="background:var(--muted);border-radius:var(--radius);padding:16px;text-align:center"><div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:var(--accent)">' + att.month.rate + '%</div><div class="text-muted" style="font-size:12px">出勤率</div></div>' +
+          '<div style="background:var(--muted);border-radius:var(--radius);padding:16px;text-align:center"><div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:var(--success)">' + att.month.normal + '</div><div class="text-muted" style="font-size:12px">正常出勤</div></div>' +
+          '<div style="background:var(--muted);border-radius:var(--radius);padding:16px;text-align:center"><div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:var(--warning)">' + att.month.late + '</div><div class="text-muted" style="font-size:12px">迟到</div></div>' +
+          '<div style="background:var(--muted);border-radius:var(--radius);padding:16px;text-align:center"><div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:var(--danger)">' + att.month.absent + '</div><div class="text-muted" style="font-size:12px">缺勤</div></div>' +
+        "</div>" +
+        '<div class="flex items-center gap-3" style="font-size:11px;color:var(--fg-muted)"><span class="tag tag-success tag-dot">正常</span><span class="tag tag-warning tag-dot">迟到</span><span class="tag tag-danger tag-dot">缺勤</span><span class="tag tag-accent tag-dot">今日</span></div>' +
+      "</div>" +
+    "</section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">考勤日历</h3><span class="text-muted" style="font-size:12px">' + now.toLocaleDateString("zh-CN", { year: "numeric", month: "long" }) + "</span></div>" +
+        '<div class="cal-grid">' + calHtml + "</div>" +
+      "</div>" +
+
+      '<div class="card"><h3 style="margin-top:0">最近记录</h3>' +
+        '<div style="overflow-x:auto"><table class="table"><thead><tr><th>日期</th><th>上班</th><th>下班</th><th>时长</th><th>状态</th></tr></thead><tbody>' +
+          records.map(r => "<tr><td><strong>" + r.date.slice(5) + "</strong></td><td>" + r.checkIn + "</td><td>" + r.checkOut + "</td><td>" + r.duration + "</td><td>" + CAMPUS.shell.statusTag(r.status) + "</td></tr>").join("") +
+        "</tbody></table></div>" +
+      "</div>" +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+
+  setInterval(() => { const c = document.getElementById("bigClock"); if (c) c.textContent = new Date().toTimeString().slice(0, 8); }, 1000);
+
+  document.getElementById("checkInBtn").onclick = function() { if (this.classList.contains("done")) return; this.classList.add("done"); this.innerHTML = CAMPUS.icon("check", "icon-sm") + " 已打卡 " + new Date().toTimeString().slice(0, 5); CAMPUS.toast("上班打卡成功", "success"); };
+  document.getElementById("checkOutBtn").onclick = function() { if (this.classList.contains("done")) return; this.classList.add("done"); this.innerHTML = CAMPUS.icon("check", "icon-sm") + " 已打卡 " + new Date().toTimeString().slice(0, 5); CAMPUS.toast("下班打卡成功", "success"); };
+</script>
+</body>
+</html>
