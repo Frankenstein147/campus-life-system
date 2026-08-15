@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="student">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>校园社交 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .post-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; transition: var(--dur); }
+  .post-card:hover { box-shadow: var(--shadow-md); }
+  .post-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .post-body { font-size: 14px; line-height: 1.65; color: var(--fg); margin-bottom: 14px; }
+  .post-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .post-foot { display: flex; align-items: center; gap: 20px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .post-action { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--fg-muted); cursor: pointer; transition: var(--dur); padding: 4px 8px; border-radius: var(--radius); }
+  .post-action:hover { background: var(--muted); color: var(--accent); }
+  .post-action.liked { color: var(--danger); }
+  .activity-card { display: flex; gap: 12px; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius); transition: var(--dur); cursor: pointer; }
+  .activity-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .activity-date { width: 56px; text-align: center; flex-shrink: 0; }
+  .activity-day { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: var(--accent); line-height: 1; }
+  .activity-mon { font-size: 11px; color: var(--fg-muted); }
+  .group-card { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: var(--radius); transition: var(--dur); cursor: pointer; }
+  .group-card:hover { background: var(--muted); }
+  .group-icon { width: 40px; height: 40px; border-radius: var(--radius); background: var(--accent-grad-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .compose-bar { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; display: flex; gap: 12px; align-items: center; cursor: pointer; transition: var(--dur); }
+  .compose-bar:hover { border-color: var(--accent); }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "主导航", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "dorm", label: "宿舍管理", icon: "home", href: "dorm.html" },
+      { key: "dining", label: "餐饮服务", icon: "utensils", href: "dining.html" },
+      { key: "repair", label: "后勤报修", icon: "wrench", href: "repair.html", badge: "2" },
+      { key: "access", label: "门禁出行", icon: "door", href: "access.html" },
+      { key: "social", label: "校园社交", icon: "chat", href: "social.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "student", nav, title: "校园社交 · 学生端", active: "social" });
+  const s = CAMPUS.mock.social;
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "学生端", href: "index.html" }, { label: "校园社交" }], "校园社交", "校园动态、活动报名、兴趣社群与失物招领",
+      '<button class="btn btn-primary btn-sm" id="composeBtn">' + CAMPUS.icon("edit", "icon-sm") + " 发布动态</button>") +
+
+    '<section class="grid" style="grid-template-columns:1fr 320px;gap:20px">' +
+      '<div>' +
+        '<div class="compose-bar mb-4" id="composeBar"><div class="avatar avatar-sm">陈</div><div style="flex:1;color:var(--fg-muted);font-size:13px">分享你的校园生活…</div><button class="btn btn-primary btn-sm">发布</button></div>' +
+
+        '<div class="grid gap-3">' + s.posts.map(p =>
+          '<div class="post-card">' +
+            '<div class="post-head"><div class="avatar avatar-lg">' + p.avatar + '</div><div style="flex:1"><div style="font-weight:700;font-size:14px">' + p.author + '</div><div class="text-muted" style="font-size:11px">' + p.time + "</div></div>" +
+            '<button class="header-action">' + CAMPUS.icon("more", "icon-sm") + "</button></div>" +
+            '<div class="post-body">' + p.content + "</div>" +
+            '<div class="post-tags">' + p.tags.map(t => '<span class="tag tag-accent">#' + t + "</span>").join("") + "</div>" +
+            '<div class="post-foot">' +
+              '<span class="post-action' + (p.liked ? " liked" : "") + '" onclick="this.classList.toggle(\'liked\')">' + CAMPUS.icon("heart", "icon-sm") + " " + p.likes + "</span>" +
+              '<span class="post-action">' + CAMPUS.icon("chat", "icon-sm") + " " + p.comments + "</span>" +
+              '<span class="post-action">' + CAMPUS.icon("send", "icon-sm") + " 分享</span>" +
+            "</div>" +
+          "</div>"
+        ).join("") + "</div>" +
+      "</div>" +
+
+      '<aside>' +
+        '<div class="card mb-4"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">活动报名</h3><span class="tag tag-accent">' + s.activities.filter(a => a.status === "报名中").length + " 个进行中</span></div>" +
+          '<div class="grid gap-2">' + s.activities.map(a =>
+            '<div class="activity-card" onclick="CAMPUS.toast(\'已打开活动详情: ' + a.title + "',\'info\')\">" +
+              '<div class="activity-date"><div class="activity-day">' + a.time.slice(5, 7) + '</div><div class="activity-mon">' + a.time.slice(0, 5) + "</div></div>" +
+              '<div style="flex:1"><div style="font-weight:600;font-size:13px">' + a.title + "</div>" +
+              '<div class="text-muted" style="font-size:11px;margin:2px 0">' + CAMPUS.icon("clock", "icon-sm") + " " + a.time.slice(8) + ' · ' + CAMPUS.icon("map", "icon-sm") + " " + a.location + "</div>" +
+              '<div class="flex items-center justify-between mt-2"><span class="text-muted" style="font-size:11px">' + a.organizer + " · " + a.count + " 人</span>" + CAMPUS.shell.statusTag(a.status) + "</div></div>" +
+            "</div>"
+          ).join("") + "</div>" +
+        "</div>" +
+
+        '<div class="card mb-4"><h3 style="margin-top:0">推荐社群</h3>' +
+          s.groups.map(g =>
+            '<div class="group-card"><div class="group-icon">' + CAMPUS.icon("users", "icon") + '</div><div style="flex:1"><div style="font-weight:600;font-size:13px">' + g.name + '</div><div class="text-muted" style="font-size:11px">' + g.members + " 成员 · " + g.new + " 新消息</div></div>" +
+            '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'已加入 ' + g.name + "',\'success\')\">加入</button></div>"
+          ).join("") +
+        "</div>" +
+
+        '<div class="card"><h3 style="margin-top:0">快捷入口</h3>' +
+          '<div class="grid grid-2 gap-2">' +
+            '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'失物招领已打开\')">' + CAMPUS.icon("search", "icon-sm") + " 失物招领</button>" +
+            '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'二手市场已打开\')">' + CAMPUS.icon("box", "icon-sm") + " 二手市场</button>" +
+            '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'拼车出行已打开\')">' + CAMPUS.icon("map", "icon-sm") + " 拼车出行</button>" +
+            '<button class="btn btn-outline btn-sm" onclick="CAMPUS.toast(\'学习互助已打开\')">' + CAMPUS.icon("book", "icon-sm") + " 学习互助</button>" +
+          "</div>" +
+        "</div>" +
+      "</aside>" +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+
+  const openCompose = () => CAMPUS.modal({
+    title: "发布动态", width: "560px",
+    body: '<div class="field"><label class="field-label">内容</label><textarea class="textarea" placeholder="分享你的校园生活…" style="min-height:120px"></textarea></div>' +
+      '<div class="field"><label class="field-label">话题标签</label><input class="input" placeholder="#学习 #活动 #求助（空格分隔）"></div>' +
+      '<div class="field"><button class="btn btn-outline btn-block">' + CAMPUS.icon("upload", "icon-sm") + " 添加图片</button></div>",
+    onOk: () => CAMPUS.toast("动态已发布", "success")
+  });
+  document.getElementById("composeBtn").onclick = openCompose;
+  document.getElementById("composeBar").onclick = openCompose;
+</script>
+</body>
+</html>
