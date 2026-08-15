@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-role="staff">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教职工端 · 概览 - 校园生活系统</title>
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/layout.css">
+<style>
+  .check-card { background: var(--accent-grad); border-radius: var(--radius-md); padding: 24px; color: #fff; position: relative; overflow: hidden; }
+  .check-card::before { content: ""; position: absolute; top: -30px; right: -30px; width: 140px; height: 140px; background: rgba(255,255,255,.1); border-radius: 50%; }
+  .check-card > * { position: relative; }
+  .clock-time { font-family: var(--font-mono); font-size: 2.25rem; font-weight: 700; margin: 4px 0; letter-spacing: -0.02em; }
+  .quick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .quick-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px 14px; text-align: center; transition: all var(--dur) var(--ease); cursor: pointer; text-decoration: none; color: inherit; display: block; }
+  .quick-item:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .quick-icon { width: 44px; height: 44px; border-radius: var(--radius); background: var(--accent-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; transition: var(--dur); }
+  .quick-item:hover .quick-icon { background: var(--accent-grad); color: #fff; }
+  .notice-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .notice-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<script src="../assets/js/mock.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+  const nav = [
+    { title: "办公导航", items: [
+      { key: "home", label: "概览", icon: "grid", href: "index.html" },
+      { key: "attend", label: "考勤打卡", icon: "clock", href: "attendance.html" },
+      { key: "notice", label: "通知下发", icon: "bell", href: "notice.html" },
+      { key: "repair", label: "办公报修", icon: "wrench", href: "office-repair.html", badge: "1" },
+      { key: "resource", label: "场地物资借用", icon: "box", href: "resource.html" }
+    ]}
+  ];
+  const main = CAMPUS.shell.render({ role: "staff", nav, title: "概览 · 教职工端", active: "home" });
+  const stats = CAMPUS.mock.stats.staff;
+  const att = CAMPUS.mock.staff.attendance;
+  const notices = CAMPUS.mock.staff.notices.slice(0, 4);
+  const repairs = CAMPUS.mock.staff.officeRepairs;
+  const user = CAMPUS.mock.staff.profile;
+
+  const now = new Date();
+  const timeStr = now.toTimeString().slice(0, 8);
+
+  main.innerHTML =
+    CAMPUS.shell.pageHead([{ label: "教职工端", href: "index.html" }, { label: "概览" }], user.title + " · " + user.name, user.dept + " · 工号 " + user.id + " · 办公室 " + user.office,
+      '<a class="btn btn-outline btn-sm" href="attendance.html">' + CAMPUS.icon("clock", "icon-sm") + " 去打卡</a>") +
+
+    '<section class="grid grid-4 mb-4">' + stats.map(CAMPUS.shell.statCard).join("") + "</section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="check-card"><div style="font-size:12px;opacity:.85">今日考勤</div>' +
+        '<div class="clock-time" id="liveClock">' + timeStr + "</div>" +
+        '<div class="flex gap-3 mt-2" style="font-size:13px"><span style="opacity:.85">上班 ' + att.today.checkIn + "</span>" +
+        (att.today.checkOut ? '<span style="opacity:.85">下班 ' + att.today.checkOut + "</span>" : '<span style="opacity:.85">下班 未打卡</span>') + "</div>" +
+        '<div style="margin-top:16px;display:flex;gap:10px">' +
+          (att.today.checkOut ? '<button class="btn btn-lg" style="background:rgba(255,255,255,.2);color:#fff;flex:1" onclick="CAMPUS.toast(\'今日已完成打卡\',\'info\')">已完成</button>' :
+          '<button class="btn btn-lg" style="background:#fff;color:var(--accent);flex:1" onclick="CAMPUS.toast(\'下班打卡成功\',\'success\')">' + CAMPUS.icon("check", "icon-sm") + " 下班打卡</button>") +
+        "</div>" +
+        '<div style="margin-top:12px;font-size:12px;opacity:.85">' + att.today.duration + "</div>" +
+      "</div>" +
+
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">快捷办公</h3></div>' +
+        '<div class="quick-grid">' +
+          '<a class="quick-item" href="attendance.html"><div class="quick-icon">' + CAMPUS.icon("clock") + '</div><div style="font-weight:600;font-size:13px">考勤打卡</div></a>' +
+          '<a class="quick-item" href="notice.html"><div class="quick-icon">' + CAMPUS.icon("bell") + '</div><div style="font-weight:600;font-size:13px">下发通知</div></a>' +
+          '<a class="quick-item" href="office-repair.html"><div class="quick-icon">' + CAMPUS.icon("wrench") + '</div><div style="font-weight:600;font-size:13px">办公报修</div></a>' +
+          '<a class="quick-item" href="resource.html"><div class="quick-icon">' + CAMPUS.icon("box") + '</div><div style="font-weight:600;font-size:13px">借用物资</div></a>' +
+          '<a class="quick-item" href="resource.html"><div class="quick-icon">' + CAMPUS.icon("map") + '</div><div style="font-weight:600;font-size:13px">预约场地</div></a>' +
+          '<a class="quick-item" href="notice.html"><div class="quick-icon">' + CAMPUS.icon("send") + '</div><div style="font-weight:600;font-size:13px">公告管理</div></a>' +
+        "</div>" +
+      "</div>" +
+    "</section>" +
+
+    '<section class="grid grid-2 mb-4">' +
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">已发通知</h3><a class="text-accent" href="notice.html" style="font-size:12px">管理通知 →</a></div>' +
+        notices.map(n =>
+          '<div class="notice-row"><div style="flex:1"><div style="font-weight:600;font-size:13px">' + n.title + '</div><div class="text-muted" style="font-size:11px">' + n.scope + " · " + n.published + "</div></div>" +
+          '<div style="text-align:right"><div style="font-size:11px;color:var(--fg-muted)">' + n.read + "/" + n.total + "</div>" + CAMPUS.shell.statusTag(n.status) + "</div></div>"
+        ).join("") +
+      "</div>" +
+
+      '<div class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">办公报修</h3><a class="text-accent" href="office-repair.html" style="font-size:12px">查看全部 →</a></div>' +
+        (repairs.length ? repairs.map(r =>
+          '<div class="notice-row"><div style="flex:1"><div style="font-weight:600;font-size:13px">' + r.title + '</div><div class="text-muted" style="font-size:11px">' + r.id + " · " + r.location + " · " + r.created + "</div></div>" +
+          '<div style="text-align:right"><div style="font-size:11px;color:var(--fg-muted)">' + r.handler + "</div>" + CAMPUS.shell.statusTag(r.status) + "</div></div>"
+        ).join("") : CAMPUS.shell.empty("暂无报修记录")) +
+        '<button class="btn btn-outline btn-block mt-3" onclick="CAMPUS.toast(\'报修页面已打开\')">' + CAMPUS.icon("plus", "icon-sm") + " 发起新报修</button>" +
+      "</div>" +
+    "</section>" +
+
+    '<section class="card"><div class="flex items-center justify-between mb-3"><h3 style="margin:0">本月考勤概览</h3><span class="text-muted" style="font-size:12px">出勤率 ' + att.month.rate + "%</span></div>" +
+      '<div class="grid grid-4">' +
+        '<div style="text-align:center;padding:12px"><div style="font-family:var(--font-display);font-size:1.75rem;font-weight:800;color:var(--accent)">' + att.month.total + '</div><div class="text-muted" style="font-size:12px">应出勤天数</div></div>' +
+        '<div style="text-align:center;padding:12px"><div style="font-family:var(--font-display);font-size:1.75rem;font-weight:800;color:var(--success)">' + att.month.normal + '</div><div class="text-muted" style="font-size:12px">正常出勤</div></div>' +
+        '<div style="text-align:center;padding:12px"><div style="font-family:var(--font-display);font-size:1.75rem;font-weight:800;color:var(--warning)">' + att.month.late + '</div><div class="text-muted" style="font-size:12px">迟到次数</div></div>' +
+        '<div style="text-align:center;padding:12px"><div style="font-family:var(--font-display);font-size:1.75rem;font-weight:800;color:var(--danger)">' + att.month.absent + '</div><div class="text-muted" style="font-size:12px">缺勤天数</div></div>' +
+      "</div>" +
+    "</section>";
+
+  main.querySelectorAll("section").forEach((s, i) => { s.classList.add("fade-up"); s.style.animationDelay = (i * 0.05) + "s"; });
+
+  setInterval(() => {
+    const c = document.getElementById("liveClock");
+    if (c) c.textContent = new Date().toTimeString().slice(0, 8);
+  }, 1000);
+</script>
+</body>
+</html>
